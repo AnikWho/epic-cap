@@ -1,742 +1,210 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>EPIC Engineering CAP System</title>
-  <style>
-    :root {
-      --primary: #003366;
-      --primary-hover: #002244;
-      --accent: #ff9800;
-      --bg: #f4f6f9;
-      --card: #ffffff;
-      --border: #e0e0e0;
-      --text: #212529;
-      --muted: #6c757d;
-      --green: #2e7d32;
-      --orange: #ef6c00;
-      --red: #c62828;
-    }
-
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-    body { background-color: var(--bg); color: var(--text); padding-bottom: 60px; }
-
-    header {
-      background: var(--primary);
-      color: white;
-      padding: 16px 20px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      position: sticky;
-      top: 0;
-      z-index: 1000;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-    }
-    header h1 { font-size: 1.15rem; font-weight: 700; }
-    .badge { background: var(--accent); padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; }
-
-    .container { max-width: 1100px; margin: 20px auto; padding: 0 15px; }
-
-    /* Navigation Bar */
-    .breadcrumb-bar {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin-bottom: 20px;
-      background: white;
-      padding: 10px 15px;
-      border-radius: 8px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
-      font-size: 0.9rem;
-    }
-    .btn-nav {
-      background: #e9ecef;
-      border: none;
-      padding: 6px 12px;
-      border-radius: 6px;
-      font-weight: 600;
-      cursor: pointer;
-    }
-    .current-path { font-weight: 700; color: var(--primary); }
-
-    /* Card Grid */
-    .grid-cards {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-      gap: 15px;
-    }
-    .card {
-      background: white;
-      border-radius: 12px;
-      padding: 24px 16px;
-      text-align: center;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-      cursor: pointer;
-      border: 2px solid transparent;
-      transition: all 0.2s ease;
-    }
-    .card:hover, .card:active {
-      border-color: var(--primary);
-      transform: translateY(-3px);
-      box-shadow: 0 4px 12px rgba(0,0,0,0.12);
-    }
-    .card-icon { font-size: 2.2rem; margin-bottom: 10px; }
-    .card-title { font-size: 1.1rem; font-weight: 700; color: var(--primary); }
-    .card-subtitle { font-size: 0.8rem; color: var(--muted); margin-top: 5px; }
-
-    /* Action Choice Buttons */
-    .choice-container {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 20px;
-      margin-top: 15px;
-    }
-    @media (max-width: 600px) {
-      .choice-container { grid-template-columns: 1fr; }
-    }
-    .choice-btn {
-      background: white;
-      border: 2px solid var(--primary);
-      border-radius: 12px;
-      padding: 30px 20px;
-      text-align: center;
-      cursor: pointer;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.06);
-      transition: all 0.2s;
-    }
-    .choice-btn:hover {
-      background: #f0f7ff;
-      transform: translateY(-2px);
-    }
-    .choice-btn h3 { font-size: 1.3rem; color: var(--primary); margin-bottom: 6px; }
-    .choice-btn p { font-size: 0.85rem; color: var(--muted); }
-
-    /* Form Styles */
-    .form-panel {
-      background: white;
-      padding: 24px;
-      border-radius: 12px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.06);
-    }
-    .form-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-      gap: 16px;
-    }
-    .form-group { display: flex; flex-direction: column; }
-    .full-width { grid-column: 1 / -1; }
-    label { font-size: 0.85rem; font-weight: 600; color: #444; margin-bottom: 6px; }
-    input, select, textarea {
-      padding: 10px 12px;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      font-size: 0.95rem;
-      background: #fafafa;
-    }
-    input:focus, select:focus, textarea:focus { outline: none; border-color: var(--primary); background: white; }
-
-    .camera-box {
-      border: 2px dashed #90caf9;
-      background: #f8fbfe;
-      border-radius: 10px;
-      padding: 16px;
-      text-align: center;
-      position: relative;
-      cursor: pointer;
-    }
-    .camera-box input[type="file"] {
-      position: absolute;
-      top: 0; left: 0; width: 100%; height: 100%;
-      opacity: 0;
-      cursor: pointer;
-    }
-    .preview-img { max-width: 100%; max-height: 120px; margin-top: 10px; border-radius: 6px; display: none; }
-
-    .btn-submit {
-      background: var(--primary);
-      color: white;
-      border: none;
-      padding: 14px;
-      border-radius: 8px;
-      font-size: 1rem;
-      font-weight: 700;
-      width: 100%;
-      cursor: pointer;
-      margin-top: 20px;
-    }
-
-    /* Table Styles */
-    .table-container {
-      background: white;
-      border-radius: 12px;
-      padding: 16px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.06);
-      overflow-x: auto;
-    }
-    table { width: 100%; border-collapse: collapse; min-width: 900px; font-size: 0.85rem; }
-    th { background: #eef2f6; color: var(--primary); padding: 12px 10px; text-align: left; font-weight: 700; }
-    td { padding: 12px 10px; border-bottom: 1px solid var(--border); vertical-align: middle; }
-
-    .status-pill {
-      padding: 4px 10px;
-      border-radius: 14px;
-      font-weight: 700;
-      font-size: 0.75rem;
-      display: inline-block;
-    }
-    .status-Open { background: #ffebee; color: var(--red); }
-    .status-InProgress { background: #fff3e0; color: var(--orange); }
-    .status-Completed { background: #e8f5e9; color: var(--green); }
-
-    .thumb { width: 50px; height: 50px; object-fit: cover; border-radius: 6px; border: 1px solid #ccc; cursor: pointer; }
-    .btn-upload-cell {
-      background: #e3f2fd;
-      color: #0d47a1;
-      border: 1px solid #90caf9;
-      padding: 6px 10px;
-      border-radius: 6px;
-      font-size: 0.75rem;
-      font-weight: 700;
-      cursor: pointer;
-      display: inline-block;
-      white-space: nowrap;
-    }
-
-    /* Update Modal */
-    .modal-overlay {
-      position: fixed;
-      top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(0,0,0,0.5);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      z-index: 2000;
-    }
-    .modal {
-      background: white;
-      width: 90%;
-      max-width: 440px;
-      border-radius: 12px;
-      padding: 20px;
-      box-shadow: 0 5px 20px rgba(0,0,0,0.25);
-    }
-    .modal-title { font-weight: 700; font-size: 1.1rem; color: var(--primary); margin-bottom: 15px; }
-
-    .hidden { display: none !important; }
-  </style>
-</head>
-<body>
-
-  <header>
-    <h1>EPIC Engineering CAP</h1>
-    <div class="badge" id="headerTag">Central</div>
-  </header>
-
-  <div class="container">
-
-    <!-- Breadcrumb Navigation -->
-    <div class="breadcrumb-bar" id="navBar">
-      <button class="btn-nav" onclick="navTo('plants')">🏭 Plants</button>
-      <span id="navSep1" class="hidden">/</span>
-      <button class="btn-nav hidden" id="navDeptBtn" onclick="navTo('departments')">Department</button>
-      <span id="navSep2" class="hidden">/</span>
-      <span class="current-path" id="navActionText"></span>
-    </div>
-
-    <!-- 1. PLANT SELECTION VIEW -->
-    <div id="viewPlants">
-      <h2 style="font-size: 1.1rem; margin-bottom: 12px; color: var(--primary);">Step 1: Select Plant</h2>
-      <div class="grid-cards">
-        <div class="card" onclick="selectPlant('EGMCL 1')">
-          <div class="card-icon">🏭</div>
-          <div class="card-title">EGMCL 1</div>
-          <div class="card-subtitle">Epic Garments Unit-1</div>
-        </div>
-        <div class="card" onclick="selectPlant('EGMCL 2')">
-          <div class="card-icon">🏭</div>
-          <div class="card-title">EGMCL 2</div>
-          <div class="card-subtitle">Epic Garments Unit-2</div>
-        </div>
-        <div class="card" onclick="selectPlant('PGCL')">
-          <div class="card-icon">🏬</div>
-          <div class="card-title">PGCL</div>
-          <div class="card-subtitle">Pearl Garments Co.</div>
-        </div>
-        <div class="card" onclick="selectPlant('CIPL')">
-          <div class="card-icon">🏗️</div>
-          <div class="card-title">CIPL</div>
-          <div class="card-subtitle">Cosmopolitan Ind.</div>
-        </div>
-        <div class="card" onclick="selectPlant('GTL')">
-          <div class="card-icon">🏢</div>
-          <div class="card-title">GTL</div>
-          <div class="card-subtitle">Garment Tech Ltd.</div>
-        </div>
-        <div class="card" onclick="selectPlant('CENTRAL')">
-          <div class="card-icon">🌐</div>
-          <div class="card-title">CENTRAL</div>
-          <div class="card-subtitle">HQ Engineering</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- 2. DEPARTMENT SELECTION VIEW -->
-    <div id="viewDepartments" class="hidden">
-      <h2 style="font-size: 1.1rem; margin-bottom: 12px; color: var(--primary);" id="deptHeader">Step 2: Select CAP Category</h2>
-      <div class="grid-cards">
-        <div class="card" onclick="selectDepartment('Electrical')">
-          <div class="card-icon">⚡</div>
-          <div class="card-title">1. Electrical CAP</div>
-          <div class="card-subtitle">Panels, SLD, Substation, DB</div>
-        </div>
-        <div class="card" onclick="selectDepartment('Mechanical')">
-          <div class="card-icon">⚙️</div>
-          <div class="card-title">2. Mechanical CAP</div>
-          <div class="card-subtitle">Boiler, Compressor, Generators</div>
-        </div>
-        <div class="card" onclick="selectDepartment('Civil')">
-          <div class="card-icon">🧱</div>
-          <div class="card-title">3. Civil CAP</div>
-          <div class="card-subtitle">Structural, Cracks, Loading</div>
-        </div>
-        <div class="card" onclick="selectDepartment('General')">
-          <div class="card-icon">🛡️</div>
-          <div class="card-title">4. General CAP</div>
-          <div class="card-subtitle">Housekeeping, EHS, Audits</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- 3. ACTION CHOICE VIEW -->
-    <div id="viewActions" class="hidden">
-      <h2 style="font-size: 1.1rem; margin-bottom: 12px; color: var(--primary);" id="actionHeader">What would you like to do?</h2>
-      <div class="choice-container">
-        <div class="choice-btn" onclick="openAddForm()">
-          <div style="font-size: 2.5rem; margin-bottom: 8px;">➕</div>
-          <h3>Add New CAP</h3>
-          <p>Record a new inspection observation, budget, location & evidence photo.</p>
-        </div>
-        <div class="choice-btn" onclick="openAllCaps()">
-          <div style="font-size: 2.5rem; margin-bottom: 8px;">📋</div>
-          <h3>Show All CAPs</h3>
-          <p>View previous findings, track progress, or insert corrected completion photos.</p>
-        </div>
-      </div>
-    </div>
-
-    <!-- 4. ADD NEW CAP FORM -->
-    <div id="viewForm" class="hidden">
-      <div class="form-panel">
-        <h2 style="font-size: 1.15rem; color: var(--primary); margin-bottom: 15px;" id="formTitle">New Inspection CAP</h2>
-        <form id="capForm" onsubmit="submitNewCap(event)">
-          <div class="form-grid">
-            <div class="form-group">
-              <label>Submitted By (Name & ID) *</label>
-              <input type="text" id="subBy" required placeholder="e.g. Md. Jamirul Islam (Safety Eng.)" />
-            </div>
-
-            <div class="form-group">
-              <label>Location *</label>
-              <input type="text" id="subLoc" required placeholder="e.g. 2nd Floor, SDB-2.1 or Rooftop" />
-            </div>
-
-            <div class="form-group full-width">
-              <label>Inspection Observation / Finding *</label>
-              <textarea id="subIssue" required rows="2" placeholder="Detail the safety hazard, finding or violation..."></textarea>
-            </div>
-
-            <div class="form-group">
-              <label>Responsible Person (DRI)</label>
-              <input type="text" id="subResp" placeholder="e.g. Hafizur Rahman Ripon" />
-            </div>
-
-            <div class="form-group">
-              <label>Budget (BDT / Cost)</label>
-              <input type="number" id="subBudget" placeholder="e.g. 1500" />
-            </div>
-
-            <div class="form-group">
-              <label>Initial Status</label>
-              <select id="subStatus">
-                <option value="Open">Open</option>
-                <option value="In Progress">In Progress</option>
-                <option value="Completed">Completed</option>
-              </select>
-            </div>
-
-            <!-- Evidence Camera Upload -->
-            <div class="form-group">
-              <label>Evidence Picture (Tap camera icon) 📸</label>
-              <div class="camera-box">
-                <span>📷 Take Photo / Choose File</span>
-                <input type="file" accept="image/*" capture="environment" onchange="processImage(this, 'newEvidencePrev', 'evidence')" />
-                <img id="newEvidencePrev" class="preview-img" />
-              </div>
-            </div>
-
-            <!-- Corrected Picture Upload -->
-            <div class="form-group">
-              <label>Corrected Picture (Optional now) ✅</label>
-              <div class="camera-box">
-                <span>📷 Take Photo / Choose File</span>
-                <input type="file" accept="image/*" capture="environment" onchange="processImage(this, 'newCorrectedPrev', 'corrected')" />
-                <img id="newCorrectedPrev" class="preview-img" />
-              </div>
-            </div>
-
-            <div class="form-group full-width">
-              <label>Inspection Action Plan / Remarks</label>
-              <textarea id="subRemarks" rows="2" placeholder="Action recommendation or timeline notes..."></textarea>
-            </div>
-          </div>
-
-          <button type="submit" id="btnSaveCap" class="btn-submit">Submit to Google Sheet</button>
-        </form>
-      </div>
-    </div>
-
-    <!-- 5. SHOW ALL CAPS (Interactive Table) -->
-    <div id="viewTable" class="hidden">
-      <div class="table-container">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-          <h3 id="tableTitle" style="color:var(--primary); font-size:1rem;">Existing CAP Records</h3>
-          <button class="btn-nav" onclick="refreshTableData()">🔄 Refresh</button>
-        </div>
-        <table id="capDataTable">
-          <thead>
-            <tr>
-              <th>Sl</th>
-              <th>Date / Time</th>
-              <th>Issue / Finding</th>
-              <th>Location</th>
-              <th>DRI</th>
-              <th>Budget</th>
-              <th>Status</th>
-              <th>Evidence</th>
-              <th>Corrected Picture (Tap to Update)</th>
-              <th>Submitted By</th>
-            </tr>
-          </thead>
-          <tbody id="tableBody">
-            <!-- Dynamically Populated -->
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-  </div>
-
-  <!-- POPUP MODAL: Quick Update Corrected Image -->
-  <div id="updateModal" class="modal-overlay hidden">
-    <div class="modal">
-      <div class="modal-title">Upload Corrected Picture</div>
-      <p style="font-size:0.85rem; color:var(--muted); margin-bottom:12px;">Updating CAP ID: <b id="modalCapId"></b></p>
-      
-      <div class="camera-box" style="margin-bottom: 12px;">
-        <span>📷 Open Camera / Choose Corrected Photo</span>
-        <input type="file" accept="image/*" capture="environment" onchange="processModalImage(this)" />
-        <img id="modalImgPrev" class="preview-img" />
-      </div>
-
-      <div class="form-group" style="margin-bottom: 12px;">
-        <label>Update Status</label>
-        <select id="modalStatus">
-          <option value="Completed" selected>Completed</option>
-          <option value="In Progress">In Progress</option>
-          <option value="Open">Open</option>
-        </select>
-      </div>
-
-      <div class="form-group" style="margin-bottom: 16px;">
-        <label>Completion Note / Remarks</label>
-        <input type="text" id="modalRemarks" placeholder="e.g. Panel cleaning and tagging completed." />
-      </div>
-
-      <div style="display:flex; gap:10px;">
-        <button type="button" class="btn-nav" style="flex:1;" onclick="closeModal()">Cancel</button>
-        <button type="button" class="btn-submit" id="btnSaveModal" style="flex:1; margin-top:0;" onclick="submitModalUpdate()">Save to Sheet</button>
-      </div>
-    </div>
-  </div>
-
-  <script>
-    // Live Web App URL linked directly:
-    var API_URL = "https://script.google.com/macros/s/AKfycbzRXTRFvlyROo4b98bvQOo19OnFcivbrU6NjZAvGV4riKIOgpznepmcX9V-Yz4VT5GnCQ/exec";
-
-    var state = {
-      plant: "",
-      department: "",
-      evidenceBase64: null,
-      correctedBase64: null,
-      modalBase64: null,
-      activeUpdateCapId: null
-    };
-
-    function selectPlant(name) {
-      state.plant = name;
-      document.getElementById("headerTag").innerText = name;
-      navTo('departments');
-    }
-
-    function selectDepartment(dept) {
-      state.department = dept;
-      navTo('actions');
-    }
-
-    function navTo(screen) {
-      ['viewPlants', 'viewDepartments', 'viewActions', 'viewForm', 'viewTable'].forEach(id => {
-        document.getElementById(id).classList.add('hidden');
-      });
-
-      var sep1 = document.getElementById("navSep1");
-      var sep2 = document.getElementById("navSep2");
-      var deptBtn = document.getElementById("navDeptBtn");
-      var actText = document.getElementById("navActionText");
-
-      if (screen === 'plants') {
-        document.getElementById("viewPlants").classList.remove('hidden');
-        sep1.classList.add('hidden');
-        deptBtn.classList.add('hidden');
-        sep2.classList.add('hidden');
-        actText.innerText = "";
-        document.getElementById("headerTag").innerText = "Central";
-      } else if (screen === 'departments') {
-        document.getElementById("viewDepartments").classList.remove('hidden');
-        document.getElementById("deptHeader").innerText = state.plant + ": Select CAP Category";
-        sep1.classList.remove('hidden');
-        deptBtn.classList.remove('hidden');
-        deptBtn.innerText = state.plant;
-        sep2.classList.add('hidden');
-        actText.innerText = "";
-      } else if (screen === 'actions') {
-        document.getElementById("viewActions").classList.remove('hidden');
-        document.getElementById("actionHeader").innerText = state.plant + " > " + state.department + " CAP";
-        sep1.classList.remove('hidden');
-        deptBtn.classList.remove('hidden');
-        deptBtn.innerText = state.plant;
-        sep2.classList.remove('hidden');
-        actText.innerText = state.department;
-      }
-    }
-
-    function openAddForm() {
-      ['viewPlants', 'viewDepartments', 'viewActions', 'viewForm', 'viewTable'].forEach(id => document.getElementById(id).classList.add('hidden'));
-      document.getElementById("viewForm").classList.remove('hidden');
-      document.getElementById("formTitle").innerText = "Add New " + state.plant + " " + state.department + " CAP";
-      document.getElementById("navActionText").innerText = state.department + " > Add New";
-    }
-
-    function openAllCaps() {
-      ['viewPlants', 'viewDepartments', 'viewActions', 'viewForm', 'viewTable'].forEach(id => document.getElementById(id).classList.add('hidden'));
-      document.getElementById("viewTable").classList.remove('hidden');
-      document.getElementById("tableTitle").innerText = state.plant + " " + state.department + " - CAP Log";
-      document.getElementById("navActionText").innerText = state.department + " > Show All";
-      loadRecords();
-    }
-
-    // Canvas image compression for fast mobile photo upload
-    function processImage(input, previewId, type) {
-      var file = input.files[0];
-      if (!file) return;
-
-      var reader = new FileReader();
-      reader.onload = function(e) {
-        compressImage(e.target.result, function(compressed) {
-          var img = document.getElementById(previewId);
-          img.src = compressed;
-          img.style.display = "block";
-          if (type === 'evidence') state.evidenceBase64 = { base64: compressed, name: file.name };
-          if (type === 'corrected') state.correctedBase64 = { base64: compressed, name: file.name };
-        });
-      };
-      reader.readAsDataURL(file);
-    }
-
-    function compressImage(base64Str, callback) {
-      var img = new Image();
-      img.onload = function() {
-        var canvas = document.createElement('canvas');
-        var max_dim = 1000;
-        var width = img.width;
-        var height = img.height;
-
-        if (width > height && width > max_dim) {
-          height = Math.round((height * max_dim) / width);
-          width = max_dim;
-        } else if (height > max_dim) {
-          width = Math.round((width * max_dim) / height);
-          height = max_dim;
-        }
-        canvas.width = width;
-        canvas.height = height;
-        var ctx = canvas.getContext('2d');
-        ctx.drawImage(img, 0, 0, width, height);
-        callback(canvas.toDataURL('image/jpeg', 0.72));
-      };
-      img.src = base64Str;
-    }
-
-    // Submit New CAP
-    function submitNewCap(e) {
-      e.preventDefault();
-      var btn = document.getElementById("btnSaveCap");
-      btn.innerText = "Saving to Google Sheet...";
-      btn.disabled = true;
-
-      var payload = {
-        action: "create",
-        plant: state.plant,
-        department: state.department,
-        submittedBy: document.getElementById("subBy").value,
-        location: document.getElementById("subLoc").value,
-        issue: document.getElementById("subIssue").value,
-        responsible: document.getElementById("subResp").value,
-        budget: document.getElementById("subBudget").value,
-        status: document.getElementById("subStatus").value,
-        remarks: document.getElementById("subRemarks").value,
-        evidenceImage: state.evidenceBase64,
-        correctedImage: state.correctedBase64
-      };
-
-      fetch(API_URL, {
-        method: "POST",
-        mode: "no-cors",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
-      })
-      .then(function() {
-        alert("CAP Successfully Logged & Synced with Google Sheet!");
-        document.getElementById("capForm").reset();
-        document.getElementById("newEvidencePrev").style.display = "none";
-        document.getElementById("newCorrectedPrev").style.display = "none";
-        state.evidenceBase64 = null;
-        state.correctedBase64 = null;
-        openAllCaps();
-      })
-      .catch(function(err) { alert("Error: " + err.message); })
-      .finally(function() {
-        btn.innerText = "Submit to Google Sheet";
-        btn.disabled = false;
-      });
-    }
-
-    // Fetch Records
-    function loadRecords() {
-      var tbody = document.getElementById("tableBody");
-      tbody.innerHTML = "<tr><td colspan='10' style='text-align:center;'>Loading plant sheet records...</td></tr>";
-
-      fetch(API_URL + "?plant=" + encodeURIComponent(state.plant) + "&department=" + encodeURIComponent(state.department))
-      .then(res => res.json())
-      .then(data => {
-        tbody.innerHTML = "";
-        if (data.records && data.records.length > 0) {
-          data.records.forEach(renderRow);
-        } else {
-          tbody.innerHTML = "<tr><td colspan='10' style='text-align:center; color:#888;'>No CAP records found. Click 'Add New CAP' to start.</td></tr>";
-        }
-      })
-      .catch(err => {
-        tbody.innerHTML = "<tr><td colspan='10' style='text-align:center; color:#888;'>Ready for new entries.</td></tr>";
-      });
-    }
-
-    function refreshTableData() { loadRecords(); }
-
-    function renderRow(row) {
-      var tbody = document.getElementById("tableBody");
-      var tr = document.createElement("tr");
-
-      var statusClean = (row.status || "Open").replace(/\s+/g, '');
-      var evImg = row.evidenceUrl ? "<a href='" + row.evidenceUrl + "' target='_blank'><img src='" + row.evidenceUrl + "' class='thumb'/></a>" : "-";
-      
-      var crImg = row.correctedUrl 
-        ? "<div style='display:flex; align-items:center; gap:6px;'><a href='" + row.correctedUrl + "' target='_blank'><img src='" + row.correctedUrl + "' class='thumb'/></a><button class='btn-upload-cell' onclick='openUpdateModal(\"" + row.capId + "\")'>Update</button></div>"
-        : "<button class='btn-upload-cell' onclick='openUpdateModal(\"" + row.capId + "\")'>📷 Upload Photo</button>";
-
-      tr.innerHTML = 
-        "<td><b>" + (row.sl || "") + "</b></td>" +
-        "<td>" + (row.date || "") + "<br><small style='color:#777;'>" + (row.time || "") + "</small></td>" +
-        "<td>" + (row.issue || "") + "</td>" +
-        "<td>" + (row.location || "") + "</td>" +
-        "<td>" + (row.responsible || "") + "</td>" +
-        "<td>" + (row.budget ? row.budget + " BDT" : "-") + "</td>" +
-        "<td><span class='status-pill status-" + statusClean + "'>" + (row.status || "Open") + "</span></td>" +
-        "<td>" + evImg + "</td>" +
-        "<td>" + crImg + "</td>" +
-        "<td>" + (row.submittedBy || "") + "</td>";
-
-      tbody.appendChild(tr);
-    }
-
-    // Modal Operations
-    function openUpdateModal(capId) {
-      state.activeUpdateCapId = capId;
-      document.getElementById("modalCapId").innerText = capId;
-      document.getElementById("modalImgPrev").style.display = "none";
-      document.getElementById("modalRemarks").value = "";
-      state.modalBase64 = null;
-      document.getElementById("updateModal").classList.remove("hidden");
-    }
-
-    function closeModal() {
-      document.getElementById("updateModal").classList.add("hidden");
-    }
-
-    function processModalImage(input) {
-      var file = input.files[0];
-      if (!file) return;
-
-      var reader = new FileReader();
-      reader.onload = function(e) {
-        compressImage(e.target.result, function(compressed) {
-          var img = document.getElementById("modalImgPrev");
-          img.src = compressed;
-          img.style.display = "block";
-          state.modalBase64 = { base64: compressed, name: file.name };
-        });
-      };
-      reader.readAsDataURL(file);
-    }
-
-    function submitModalUpdate() {
-      if (!state.modalBase64) {
-        alert("Please take or select a corrected photo first!");
-        return;
+/**
+ * EPIC Engineering CAP Engine
+ * Exact Layout Matching: EGMCL-2 Internal Engineering CAP-2026.xlsx
+ */
+
+function setupSheetHeaders(sheet, plant, department) {
+  sheet.clear();
+  
+  // Title & Header Block (Matches the Excel Inspection Report)
+  sheet.getRange("A1").setValue("INTERNAL SAFETY FOLLOW-UP INSPECTION REPORT - " + department.toUpperCase());
+  sheet.getRange("A1:J1").merge().setBackground("#003366").setFontColor("#FFFFFF").setFontWeight("bold").setFontSize(13);
+
+  sheet.getRange("A2").setValue("Factory Name:");
+  sheet.getRange("C2").setValue(plant);
+  sheet.getRange("A3").setValue("Plant Unit / Department:");
+  sheet.getRange("C3").setValue(department + " CAP");
+
+  // Excel Row 8 Standard Headers
+  var headers = [
+    "Sl", 
+    "Findings/Issue", 
+    "Location", 
+    "Pictorial Evidence", 
+    "DRI", 
+    "DL", 
+    "Budget", 
+    "Status", 
+    "Corrected Pictures", 
+    "Remarks",
+    "Submission Date",
+    "Submitted By",
+    "CAP ID"
+  ];
+
+  var headerRange = sheet.getRange(5, 1, 1, headers.length);
+  headerRange.setValues([headers]);
+  headerRange.setBackground("#1F4E79").setFontColor("#FFFFFF").setFontWeight("bold");
+  sheet.setFrozenRows(5);
+  
+  sheet.setColumnWidth(1, 50);   // Sl
+  sheet.setColumnWidth(2, 280);  // Findings/Issue
+  sheet.setColumnWidth(3, 160);  // Location
+  sheet.setColumnWidth(4, 150);  // Pictorial Evidence
+  sheet.setColumnWidth(5, 140);  // DRI
+  sheet.setColumnWidth(6, 110);  // DL
+  sheet.setColumnWidth(7, 90);   // Budget
+  sheet.setColumnWidth(8, 100);  // Status
+  sheet.setColumnWidth(9, 150);  // Corrected Pictures
+  sheet.setColumnWidth(10, 200); // Remarks
+}
+
+function getTargetSheet(plant, department) {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheetName = plant.replace(/\s+/g, '') + "_" + department.replace(/\s+/g, '');
+  var sheet = ss.getSheetByName(sheetName);
+
+  if (!sheet) {
+    sheet = ss.insertSheet(sheetName);
+    setupSheetHeaders(sheet, plant, department);
+  }
+  return sheet;
+}
+
+function doPost(e) {
+  var lock = LockService.getScriptLock();
+  lock.tryLock(30000);
+
+  try {
+    var raw = e.postData.contents;
+    var data = JSON.parse(raw);
+    var action = data.action || "create";
+    var sheet = getTargetSheet(data.plant, data.department);
+
+    if (action === "create") {
+      var evidenceUrl = "";
+      if (data.evidenceImage && data.evidenceImage.base64) {
+        evidenceUrl = saveImageFile(data.evidenceImage.base64, data.plant + "_" + data.department + "_Evidence");
       }
 
-      var btn = document.getElementById("btnSaveModal");
-      btn.innerText = "Syncing...";
-      btn.disabled = true;
+      var correctedUrl = "";
+      if (data.correctedImage && data.correctedImage.base64) {
+        correctedUrl = saveImageFile(data.correctedImage.base64, data.plant + "_" + data.department + "_Corrected");
+      }
 
-      var payload = {
-        action: "updateCorrected",
-        plant: state.plant,
-        department: state.department,
-        capId: state.activeUpdateCapId,
-        status: document.getElementById("modalStatus").value,
-        remarks: document.getElementById("modalRemarks").value,
-        correctedImage: state.modalBase64
-      };
+      var lastRow = sheet.getLastRow();
+      var sl = (lastRow >= 5) ? (lastRow - 4) : 1;
+      var capId = "CAP-" + data.plant.replace(/\s+/g, '') + "-" + new Date().getTime().toString().slice(-6);
 
-      fetch(API_URL, {
-        method: "POST",
-        mode: "no-cors",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
-      })
-      .then(function() {
-        alert("Corrected Image & Status successfully updated in Google Sheet!");
-        closeModal();
-        loadRecords();
-      })
-      .catch(function(err) { alert("Error: " + err.message); })
-      .finally(function() {
-        btn.innerText = "Save to Sheet";
-        btn.disabled = false;
-      });
+      var now = new Date();
+      var dateStr = Utilities.formatDate(now, "Asia/Dhaka", "dd-MMM-yyyy");
+      var timeStr = Utilities.formatDate(now, "Asia/Dhaka", "hh:mm a");
+
+      // Append row matching the Excel sheet column layout exactly
+      sheet.appendRow([
+        sl,
+        data.issue || "",
+        data.location || "",
+        evidenceUrl,
+        data.responsible || "",
+        data.dl || "",
+        data.budget || "",
+        data.status || "Open",
+        correctedUrl,
+        data.remarks || "",
+        dateStr + " " + timeStr,
+        data.submittedBy || "",
+        capId
+      ]);
+
+      return ContentService.createTextOutput(JSON.stringify({
+        status: "success",
+        capId: capId
+      })).setMimeType(ContentService.MimeType.JSON);
+
+    } else if (action === "updateCorrected") {
+      var capId = data.capId;
+      var correctedUrl = "";
+
+      if (data.correctedImage && data.correctedImage.base64) {
+        correctedUrl = saveImageFile(data.correctedImage.base64, data.plant + "_Corrected_" + capId);
+      }
+
+      var values = sheet.getDataRange().getValues();
+      var updated = false;
+
+      // Col 13 (index 12) holds CAP ID
+      for (var r = 5; r < values.length; r++) {
+        if (values[r][12] == capId) {
+          var rowNum = r + 1;
+          if (correctedUrl) {
+            sheet.getRange(rowNum, 9).setValue(correctedUrl); // Col I: Corrected Pictures
+          }
+          if (data.status) {
+            sheet.getRange(rowNum, 8).setValue(data.status); // Col H: Status
+          }
+          if (data.remarks) {
+            var oldRem = values[r][9] || "";
+            sheet.getRange(rowNum, 10).setValue(oldRem ? (oldRem + " | " + data.remarks) : data.remarks);
+          }
+          updated = true;
+          break;
+        }
+      }
+
+      return ContentService.createTextOutput(JSON.stringify({
+        status: updated ? "success" : "not_found",
+        correctedUrl: correctedUrl
+      })).setMimeType(ContentService.MimeType.JSON);
     }
-  </script>
-</body>
-</html>
+
+  } catch (err) {
+    return ContentService.createTextOutput(JSON.stringify({
+      status: "error",
+      message: err.toString()
+    })).setMimeType(ContentService.MimeType.JSON);
+
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+function doGet(e) {
+  var plant = e.parameter.plant || "EGMCL 1";
+  var department = e.parameter.department || "Electrical";
+  var sheet = getTargetSheet(plant, department);
+
+  if (sheet.getLastRow() <= 5) {
+    return ContentService.createTextOutput(JSON.stringify({ status: "success", records: [] }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+
+  var values = sheet.getDataRange().getValues();
+  var records = [];
+
+  // Data starts at Row index 5 (Row 6 in sheet)
+  for (var i = 5; i < values.length; i++) {
+    var row = values[i];
+    records.push({
+      sl: row[0],
+      issue: row[1],
+      location: row[2],
+      evidenceUrl: row[3],
+      responsible: row[4],
+      dl: row[5],
+      budget: row[6],
+      status: row[7],
+      correctedUrl: row[8],
+      remarks: row[9],
+      submittedDate: row[10],
+      submittedBy: row[11],
+      capId: row[12]
+    });
+  }
+
+  return ContentService.createTextOutput(JSON.stringify({ status: "success", records: records }))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+function saveImageFile(base64Data, prefix) {
+  try {
+    var cleanBase64 = base64Data.split(",")[1] || base64Data;
+    var decoded = Utilities.base64Decode(cleanBase64);
+    var blob = Utilities.newBlob(decoded, "image/jpeg", prefix + "_" + new Date().getTime() + ".jpg");
+    var file = DriveApp.createFile(blob);
+    file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+    return "https://drive.google.com/uc?export=view&id=" + file.getId();
+  } catch (e) {
+    return "";
+  }
+}
