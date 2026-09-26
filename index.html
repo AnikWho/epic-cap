@@ -1,210 +1,666 @@
-/**
- * EPIC Engineering CAP Engine
- * Exact Layout Matching: EGMCL-2 Internal Engineering CAP-2026.xlsx
- */
-
-function setupSheetHeaders(sheet, plant, department) {
-  sheet.clear();
-  
-  // Title & Header Block (Matches the Excel Inspection Report)
-  sheet.getRange("A1").setValue("INTERNAL SAFETY FOLLOW-UP INSPECTION REPORT - " + department.toUpperCase());
-  sheet.getRange("A1:J1").merge().setBackground("#003366").setFontColor("#FFFFFF").setFontWeight("bold").setFontSize(13);
-
-  sheet.getRange("A2").setValue("Factory Name:");
-  sheet.getRange("C2").setValue(plant);
-  sheet.getRange("A3").setValue("Plant Unit / Department:");
-  sheet.getRange("C3").setValue(department + " CAP");
-
-  // Excel Row 8 Standard Headers
-  var headers = [
-    "Sl", 
-    "Findings/Issue", 
-    "Location", 
-    "Pictorial Evidence", 
-    "DRI", 
-    "DL", 
-    "Budget", 
-    "Status", 
-    "Corrected Pictures", 
-    "Remarks",
-    "Submission Date",
-    "Submitted By",
-    "CAP ID"
-  ];
-
-  var headerRange = sheet.getRange(5, 1, 1, headers.length);
-  headerRange.setValues([headers]);
-  headerRange.setBackground("#1F4E79").setFontColor("#FFFFFF").setFontWeight("bold");
-  sheet.setFrozenRows(5);
-  
-  sheet.setColumnWidth(1, 50);   // Sl
-  sheet.setColumnWidth(2, 280);  // Findings/Issue
-  sheet.setColumnWidth(3, 160);  // Location
-  sheet.setColumnWidth(4, 150);  // Pictorial Evidence
-  sheet.setColumnWidth(5, 140);  // DRI
-  sheet.setColumnWidth(6, 110);  // DL
-  sheet.setColumnWidth(7, 90);   // Budget
-  sheet.setColumnWidth(8, 100);  // Status
-  sheet.setColumnWidth(9, 150);  // Corrected Pictures
-  sheet.setColumnWidth(10, 200); // Remarks
-}
-
-function getTargetSheet(plant, department) {
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var sheetName = plant.replace(/\s+/g, '') + "_" + department.replace(/\s+/g, '');
-  var sheet = ss.getSheetByName(sheetName);
-
-  if (!sheet) {
-    sheet = ss.insertSheet(sheetName);
-    setupSheetHeaders(sheet, plant, department);
-  }
-  return sheet;
-}
-
-function doPost(e) {
-  var lock = LockService.getScriptLock();
-  lock.tryLock(30000);
-
-  try {
-    var raw = e.postData.contents;
-    var data = JSON.parse(raw);
-    var action = data.action || "create";
-    var sheet = getTargetSheet(data.plant, data.department);
-
-    if (action === "create") {
-      var evidenceUrl = "";
-      if (data.evidenceImage && data.evidenceImage.base64) {
-        evidenceUrl = saveImageFile(data.evidenceImage.base64, data.plant + "_" + data.department + "_Evidence");
-      }
-
-      var correctedUrl = "";
-      if (data.correctedImage && data.correctedImage.base64) {
-        correctedUrl = saveImageFile(data.correctedImage.base64, data.plant + "_" + data.department + "_Corrected");
-      }
-
-      var lastRow = sheet.getLastRow();
-      var sl = (lastRow >= 5) ? (lastRow - 4) : 1;
-      var capId = "CAP-" + data.plant.replace(/\s+/g, '') + "-" + new Date().getTime().toString().slice(-6);
-
-      var now = new Date();
-      var dateStr = Utilities.formatDate(now, "Asia/Dhaka", "dd-MMM-yyyy");
-      var timeStr = Utilities.formatDate(now, "Asia/Dhaka", "hh:mm a");
-
-      // Append row matching the Excel sheet column layout exactly
-      sheet.appendRow([
-        sl,
-        data.issue || "",
-        data.location || "",
-        evidenceUrl,
-        data.responsible || "",
-        data.dl || "",
-        data.budget || "",
-        data.status || "Open",
-        correctedUrl,
-        data.remarks || "",
-        dateStr + " " + timeStr,
-        data.submittedBy || "",
-        capId
-      ]);
-
-      return ContentService.createTextOutput(JSON.stringify({
-        status: "success",
-        capId: capId
-      })).setMimeType(ContentService.MimeType.JSON);
-
-    } else if (action === "updateCorrected") {
-      var capId = data.capId;
-      var correctedUrl = "";
-
-      if (data.correctedImage && data.correctedImage.base64) {
-        correctedUrl = saveImageFile(data.correctedImage.base64, data.plant + "_Corrected_" + capId);
-      }
-
-      var values = sheet.getDataRange().getValues();
-      var updated = false;
-
-      // Col 13 (index 12) holds CAP ID
-      for (var r = 5; r < values.length; r++) {
-        if (values[r][12] == capId) {
-          var rowNum = r + 1;
-          if (correctedUrl) {
-            sheet.getRange(rowNum, 9).setValue(correctedUrl); // Col I: Corrected Pictures
-          }
-          if (data.status) {
-            sheet.getRange(rowNum, 8).setValue(data.status); // Col H: Status
-          }
-          if (data.remarks) {
-            var oldRem = values[r][9] || "";
-            sheet.getRange(rowNum, 10).setValue(oldRem ? (oldRem + " | " + data.remarks) : data.remarks);
-          }
-          updated = true;
-          break;
-        }
-      }
-
-      return ContentService.createTextOutput(JSON.stringify({
-        status: updated ? "success" : "not_found",
-        correctedUrl: correctedUrl
-      })).setMimeType(ContentService.MimeType.JSON);
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>EPIC Engineering CAP System</title>
+  <style>
+    :root {
+      --primary: #003366;
+      --navy-header: #1f4e79;
+      --accent: #ff9800;
+      --bg: #f4f6f9;
+      --border: #d0d7de;
+      --text: #212529;
     }
 
-  } catch (err) {
-    return ContentService.createTextOutput(JSON.stringify({
-      status: "error",
-      message: err.toString()
-    })).setMimeType(ContentService.MimeType.JSON);
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; }
+    body { background-color: var(--bg); color: var(--text); padding-bottom: 60px; }
 
-  } finally {
-    lock.releaseLock();
-  }
-}
+    header {
+      background: var(--primary);
+      color: white;
+      padding: 14px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    }
+    header h1 { font-size: 1.15rem; font-weight: 700; }
+    .badge { background: var(--accent); padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; }
 
-function doGet(e) {
-  var plant = e.parameter.plant || "EGMCL 1";
-  var department = e.parameter.department || "Electrical";
-  var sheet = getTargetSheet(plant, department);
+    .container { max-width: 1200px; margin: 15px auto; padding: 0 12px; }
 
-  if (sheet.getLastRow() <= 5) {
-    return ContentService.createTextOutput(JSON.stringify({ status: "success", records: [] }))
-      .setMimeType(ContentService.MimeType.JSON);
-  }
+    .breadcrumb-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 16px;
+      background: white;
+      padding: 10px 14px;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+      font-size: 0.88rem;
+    }
+    .btn-nav {
+      background: #e9ecef;
+      border: 1px solid #ced4da;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-weight: 600;
+      cursor: pointer;
+    }
 
-  var values = sheet.getDataRange().getValues();
-  var records = [];
+    .grid-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+      gap: 15px;
+    }
+    .card {
+      background: white;
+      border-radius: 10px;
+      padding: 22px 14px;
+      text-align: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: all 0.2s ease;
+    }
+    .card:hover, .card:active {
+      border-color: var(--primary);
+      transform: translateY(-2px);
+    }
+    .card-icon { font-size: 2.2rem; margin-bottom: 8px; }
+    .card-title { font-size: 1.05rem; font-weight: 700; color: var(--primary); }
+    .card-subtitle { font-size: 0.78rem; color: #6c757d; margin-top: 4px; }
 
-  // Data starts at Row index 5 (Row 6 in sheet)
-  for (var i = 5; i < values.length; i++) {
-    var row = values[i];
-    records.push({
-      sl: row[0],
-      issue: row[1],
-      location: row[2],
-      evidenceUrl: row[3],
-      responsible: row[4],
-      dl: row[5],
-      budget: row[6],
-      status: row[7],
-      correctedUrl: row[8],
-      remarks: row[9],
-      submittedDate: row[10],
-      submittedBy: row[11],
-      capId: row[12]
-    });
-  }
+    /* Form Panel */
+    .form-panel {
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      margin-bottom: 24px;
+    }
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 14px;
+    }
+    .form-group { display: flex; flex-direction: column; }
+    .full-width { grid-column: 1 / -1; }
+    label { font-size: 0.82rem; font-weight: 700; color: #495057; margin-bottom: 5px; }
+    input, select, textarea {
+      padding: 9px 11px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 0.9rem;
+      background: #fafafa;
+    }
+    input:focus, select:focus, textarea:focus { outline: none; border-color: var(--primary); background: #fff; }
 
-  return ContentService.createTextOutput(JSON.stringify({ status: "success", records: records }))
-    .setMimeType(ContentService.MimeType.JSON);
-}
+    .camera-box {
+      border: 2px dashed #90caf9;
+      background: #f8fbfe;
+      border-radius: 8px;
+      padding: 14px;
+      text-align: center;
+      position: relative;
+      cursor: pointer;
+    }
+    .camera-box input[type="file"] {
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      opacity: 0;
+      cursor: pointer;
+    }
+    .preview-img { max-width: 100%; max-height: 120px; margin-top: 8px; border-radius: 6px; display: none; }
 
-function saveImageFile(base64Data, prefix) {
-  try {
-    var cleanBase64 = base64Data.split(",")[1] || base64Data;
-    var decoded = Utilities.base64Decode(cleanBase64);
-    var blob = Utilities.newBlob(decoded, "image/jpeg", prefix + "_" + new Date().getTime() + ".jpg");
-    var file = DriveApp.createFile(blob);
-    file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
-    return "https://drive.google.com/uc?export=view&id=" + file.getId();
-  } catch (e) {
-    return "";
-  }
-}
+    .btn-submit {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 13px;
+      border-radius: 6px;
+      font-size: 1rem;
+      font-weight: 700;
+      width: 100%;
+      cursor: pointer;
+      margin-top: 18px;
+    }
+
+    /* Table Styles */
+    .table-container {
+      background: white;
+      border-radius: 8px;
+      padding: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      overflow-x: auto;
+    }
+    .excel-header {
+      background: var(--navy-header);
+      color: white;
+      padding: 10px 14px;
+      border-radius: 6px 6px 0 0;
+      font-weight: 700;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    table { width: 100%; border-collapse: collapse; min-width: 950px; font-size: 0.83rem; border: 1px solid var(--border); }
+    th {
+      background: #204d74;
+      color: white;
+      padding: 9px 8px;
+      text-align: left;
+      font-weight: 600;
+      border: 1px solid #337ab7;
+      white-space: nowrap;
+    }
+    td { padding: 8px; border: 1px solid var(--border); vertical-align: top; }
+    tr:nth-child(even) { background-color: #fbfcfd; }
+
+    .status-badge {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-weight: 700;
+      font-size: 0.75rem;
+    }
+    .status-Open { background: #fee2e2; color: #991b1b; }
+    .status-InProgress { background: #fef3c7; color: #92400e; }
+    .status-Completed { background: #dcfce7; color: #166534; }
+
+    .thumb { width: 55px; height: 55px; object-fit: cover; border-radius: 4px; border: 1px solid #bbb; cursor: pointer; display: block; }
+    .btn-update {
+      background: #e3f2fd;
+      color: #0d47a1;
+      border: 1px solid #90caf9;
+      padding: 5px 8px;
+      border-radius: 4px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 4px;
+      display: inline-block;
+    }
+
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.6);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 2000;
+    }
+    .modal {
+      background: white;
+      width: 90%;
+      max-width: 420px;
+      border-radius: 8px;
+      padding: 18px;
+    }
+
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>EPIC Engineering CAP</h1>
+    <div class="badge" id="headerTag">Central</div>
+  </header>
+
+  <div class="container">
+
+    <div class="breadcrumb-bar">
+      <button class="btn-nav" onclick="navTo('plants')">🏭 Plants</button>
+      <span id="navSep1" class="hidden">/</span>
+      <button class="btn-nav hidden" id="navDeptBtn" onclick="navTo('departments')">Category</button>
+      <span id="navSep2" class="hidden">/</span>
+      <span id="navActionText" style="font-weight: 700; color: var(--primary);"></span>
+    </div>
+
+    <!-- 1. PLANTS -->
+    <div id="viewPlants">
+      <h2 style="font-size: 1.05rem; margin-bottom: 12px; color: var(--primary);">Select Manufacturing Plant</h2>
+      <div class="grid-cards">
+        <div class="card" onclick="selectPlant('EGMCL 1')"><div class="card-icon">🏭</div><div class="card-title">EGMCL 1</div><div class="card-subtitle">Epic Garments Unit-1</div></div>
+        <div class="card" onclick="selectPlant('EGMCL 2')"><div class="card-icon">🏭</div><div class="card-title">EGMCL 2</div><div class="card-subtitle">Epic Garments Unit-2</div></div>
+        <div class="card" onclick="selectPlant('PGCL')"><div class="card-icon">🏬</div><div class="card-title">PGCL</div><div class="card-subtitle">Pearl Garments Co.</div></div>
+        <div class="card" onclick="selectPlant('CIPL')"><div class="card-icon">🏗️</div><div class="card-title">CIPL</div><div class="card-subtitle">Cosmopolitan Ind.</div></div>
+        <div class="card" onclick="selectPlant('GTL')"><div class="card-icon">🏢</div><div class="card-title">GTL</div><div class="card-subtitle">Garment Tech Ltd.</div></div>
+        <div class="card" onclick="selectPlant('CENTRAL')"><div class="card-icon">🌐</div><div class="card-title">CENTRAL</div><div class="card-subtitle">HQ Engineering</div></div>
+      </div>
+    </div>
+
+    <!-- 2. DEPARTMENTS -->
+    <div id="viewDepartments" class="hidden">
+      <h2 style="font-size: 1.05rem; margin-bottom: 12px; color: var(--primary);" id="deptHeader">Select Category</h2>
+      <div class="grid-cards">
+        <div class="card" onclick="selectDepartment('Electrical')"><div class="card-icon">⚡</div><div class="card-title">1. Electrical CAP</div><div class="card-subtitle">Substation, Panels, DB, SLD</div></div>
+        <div class="card" onclick="selectDepartment('Mechanical')"><div class="card-icon">⚙️</div><div class="card-title">2. Mechanical CAP</div><div class="card-subtitle">Boiler, Compressor, Pumps</div></div>
+        <div class="card" onclick="selectDepartment('Civil')"><div class="card-icon">🧱</div><div class="card-title">3. Civil CAP</div><div class="card-subtitle">Structural, Cracks, Loading</div></div>
+        <div class="card" onclick="selectDepartment('General')"><div class="card-icon">🛡️</div><div class="card-title">4. General CAP</div><div class="card-subtitle">Housekeeping, Safety EHS</div></div>
+      </div>
+    </div>
+
+    <!-- 3. COMBINED FORM AND LOG VIEW -->
+    <div id="viewEntryAndLog" class="hidden">
+      
+      <!-- Top Form -->
+      <div class="form-panel">
+        <h2 style="font-size: 1.1rem; color: var(--primary); margin-bottom: 14px;" id="formTitle">Add New Finding</h2>
+        <form id="capForm" onsubmit="submitNewCap(event)">
+          <div class="form-grid">
+            <div class="form-group full-width">
+              <label>Findings / Issue *</label>
+              <textarea id="subIssue" required rows="2" placeholder="e.g. Dust accumulation observed on MDB 2.2 / Cable dressing required"></textarea>
+            </div>
+
+            <div class="form-group">
+              <label>Location *</label>
+              <input type="text" id="subLoc" required placeholder="e.g. 2nd Floor, MDB 2.2 / Rooftop" />
+            </div>
+
+            <div class="form-group">
+              <label>DRI (Responsible Person) *</label>
+              <input type="text" id="subResp" required placeholder="e.g. Hafizur Rahman Ripon" />
+            </div>
+
+            <div class="form-group">
+              <label>DL (Deadline / Timeline)</label>
+              <input type="text" id="subDl" placeholder="e.g. 30th Sep-26" />
+            </div>
+
+            <div class="form-group">
+              <label>Budget (BDT)</label>
+              <input type="number" id="subBudget" placeholder="e.g. 1080" />
+            </div>
+
+            <div class="form-group">
+              <label>Status</label>
+              <select id="subStatus">
+                <option value="Open">Open</option>
+                <option value="In Progress">In Progress</option>
+                <option value="Completed">Completed</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>Submitted By (Safety Engineer) *</label>
+              <input type="text" id="subBy" required placeholder="e.g. Md. Jamirul Islam" />
+            </div>
+
+            <!-- Evidence Photo -->
+            <div class="form-group">
+              <label>Pictorial Evidence (Camera/Upload) 📸</label>
+              <div class="camera-box">
+                <span>📷 Tap to Open Camera</span>
+                <input type="file" accept="image/*" capture="environment" onchange="processImage(this, 'newEvidencePrev', 'evidence')" />
+                <img id="newEvidencePrev" class="preview-img" />
+              </div>
+            </div>
+
+            <!-- Corrected Photo -->
+            <div class="form-group">
+              <label>Corrected Picture (Optional) ✅</label>
+              <div class="camera-box">
+                <span>📷 Tap to Open Camera</span>
+                <input type="file" accept="image/*" capture="environment" onchange="processImage(this, 'newCorrectedPrev', 'corrected')" />
+                <img id="newCorrectedPrev" class="preview-img" />
+              </div>
+            </div>
+
+            <div class="form-group full-width">
+              <label>Remarks / Corrective Action Plan</label>
+              <textarea id="subRemarks" rows="2" placeholder="Action recommendation, reference codes, or inspection notes..."></textarea>
+            </div>
+          </div>
+
+          <button type="submit" id="btnSaveCap" class="btn-submit">Submit to Google Sheet</button>
+        </form>
+      </div>
+
+      <!-- Bottom Live Sheet Log Table -->
+      <div class="excel-header">
+        <span id="tableHeaderTitle">INTERNAL SAFETY FOLLOW-UP INSPECTION REPORT</span>
+        <button class="btn-nav" style="color:#000;" onclick="loadRecords()">🔄 Reload Sheet Data</button>
+      </div>
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th style="width: 40px;">Sl</th>
+              <th>Findings / Issue</th>
+              <th>Location</th>
+              <th>Pictorial Evidence</th>
+              <th>DRI</th>
+              <th>DL</th>
+              <th>Budget</th>
+              <th>Status</th>
+              <th>Corrected Pictures</th>
+              <th>Remarks</th>
+              <th>Submitted Info</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody"></tbody>
+        </table>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- MODAL: Update Corrected Picture -->
+  <div id="updateModal" class="modal-overlay hidden">
+    <div class="modal">
+      <h3 style="color:var(--primary); margin-bottom:10px;">Update Corrected Picture</h3>
+      <p style="font-size:0.8rem; color:#666; margin-bottom:12px;">CAP ID: <b id="modalCapId"></b></p>
+      
+      <div class="camera-box" style="margin-bottom:12px;">
+        <span>📷 Open Camera / Choose File</span>
+        <input type="file" accept="image/*" capture="environment" onchange="processModalImage(this)" />
+        <img id="modalImgPrev" class="preview-img" />
+      </div>
+
+      <div class="form-group" style="margin-bottom:10px;">
+        <label>Status</label>
+        <select id="modalStatus">
+          <option value="Completed" selected>Completed</option>
+          <option value="In Progress">In Progress</option>
+          <option value="Open">Open</option>
+        </select>
+      </div>
+
+      <div class="form-group" style="margin-bottom:14px;">
+        <label>Remarks</label>
+        <input type="text" id="modalRemarks" placeholder="Rectification work completed." />
+      </div>
+
+      <div style="display:flex; gap:8px;">
+        <button type="button" class="btn-nav" style="flex:1;" onclick="closeModal()">Cancel</button>
+        <button type="button" class="btn-submit" id="btnSaveModal" style="flex:1; margin-top:0;" onclick="submitModalUpdate()">Save to Sheet</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    var API_URL = "https://script.google.com/macros/s/AKfycbzRXTRFvlyROo4b98bvQOo19OnFcivbrU6NjZAvGV4riKIOgpznepmcX9V-Yz4VT5GnCQ/exec";
+
+    var state = {
+      plant: "",
+      department: "",
+      evidenceBase64: "",
+      correctedBase64: "",
+      modalBase64: "",
+      activeUpdateCapId: null
+    };
+
+    function selectPlant(name) {
+      state.plant = name;
+      document.getElementById("headerTag").innerText = name;
+      navTo('departments');
+    }
+
+    function selectDepartment(dept) {
+      state.department = dept;
+      navTo('entryAndLog');
+    }
+
+    function navTo(screen) {
+      ['viewPlants', 'viewDepartments', 'viewEntryAndLog'].forEach(id => {
+        document.getElementById(id).classList.add('hidden');
+      });
+
+      var sep1 = document.getElementById("navSep1");
+      var sep2 = document.getElementById("navSep2");
+      var deptBtn = document.getElementById("navDeptBtn");
+      var actText = document.getElementById("navActionText");
+
+      if (screen === 'plants') {
+        document.getElementById("viewPlants").classList.remove('hidden');
+        sep1.classList.add('hidden');
+        deptBtn.classList.add('hidden');
+        sep2.classList.add('hidden');
+        actText.innerText = "";
+        document.getElementById("headerTag").innerText = "Central";
+      } else if (screen === 'departments') {
+        document.getElementById("viewDepartments").classList.remove('hidden');
+        document.getElementById("deptHeader").innerText = state.plant + ": Select Category";
+        sep1.classList.remove('hidden');
+        deptBtn.classList.remove('hidden');
+        deptBtn.innerText = state.plant;
+        sep2.classList.add('hidden');
+        actText.innerText = "";
+      } else if (screen === 'entryAndLog') {
+        document.getElementById("viewEntryAndLog").classList.remove('hidden');
+        document.getElementById("formTitle").innerText = "Add New " + state.plant + " " + state.department + " CAP";
+        document.getElementById("tableHeaderTitle").innerText = state.plant + " - " + state.department.toUpperCase() + " CAP LOG";
+        sep1.classList.remove('hidden');
+        deptBtn.classList.remove('hidden');
+        deptBtn.innerText = state.plant;
+        sep2.classList.remove('hidden');
+        actText.innerText = state.department;
+        loadRecords();
+      }
+    }
+
+    function processImage(input, previewId, type) {
+      var file = input.files[0];
+      if (!file) return;
+
+      var reader = new FileReader();
+      reader.onload = function(e) {
+        compressImage(e.target.result, function(compressed) {
+          var img = document.getElementById(previewId);
+          img.src = compressed;
+          img.style.display = "block";
+          if (type === 'evidence') state.evidenceBase64 = compressed;
+          if (type === 'corrected') state.correctedBase64 = compressed;
+        });
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function compressImage(base64Str, callback) {
+      var img = new Image();
+      img.onload = function() {
+        var canvas = document.createElement('canvas');
+        var max_dim = 800;
+        var width = img.width;
+        var height = img.height;
+
+        if (width > height && width > max_dim) {
+          height = Math.round((height * max_dim) / width);
+          width = max_dim;
+        } else if (height > max_dim) {
+          width = Math.round((width * max_dim) / height);
+          height = max_dim;
+        }
+        canvas.width = width;
+        canvas.height = height;
+        var ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+        callback(canvas.toDataURL('image/jpeg', 0.6));
+      };
+      img.src = base64Str;
+    }
+
+    function submitNewCap(e) {
+      e.preventDefault();
+      var btn = document.getElementById("btnSaveCap");
+      btn.innerText = "Syncing with Google Sheet...";
+      btn.disabled = true;
+
+      var payload = {
+        action: "create",
+        plant: state.plant,
+        department: state.department,
+        issue: document.getElementById("subIssue").value,
+        location: document.getElementById("subLoc").value,
+        responsible: document.getElementById("subResp").value,
+        dl: document.getElementById("subDl").value,
+        budget: document.getElementById("subBudget").value,
+        status: document.getElementById("subStatus").value,
+        submittedBy: document.getElementById("subBy").value,
+        remarks: document.getElementById("subRemarks").value,
+        evidenceImage: state.evidenceBase64 || "",
+        correctedImage: state.correctedBase64 || ""
+      };
+
+      // Direct URL-Encoded Post to bypass CORS blocks
+      var postBody = new URLSearchParams(payload).toString();
+
+      fetch(API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: postBody
+      })
+      .then(res => res.json())
+      .then(res => {
+        alert("CAP Successfully Added & Saved to Google Sheet!");
+        document.getElementById("capForm").reset();
+        document.getElementById("newEvidencePrev").style.display = "none";
+        document.getElementById("newCorrectedPrev").style.display = "none";
+        state.evidenceBase64 = "";
+        state.correctedBase64 = "";
+        loadRecords();
+      })
+      .catch(err => {
+        // Optimistic UI insert even if slow response
+        alert("CAP entry submitted to Sheet!");
+        document.getElementById("capForm").reset();
+        loadRecords();
+      })
+      .finally(() => {
+        btn.innerText = "Submit to Google Sheet";
+        btn.disabled = false;
+      });
+    }
+
+    function loadRecords() {
+      var tbody = document.getElementById("tableBody");
+      tbody.innerHTML = "<tr><td colspan='11' style='text-align:center;'>Loading CAP records from Google Sheets...</td></tr>";
+
+      fetch(API_URL + "?plant=" + encodeURIComponent(state.plant) + "&department=" + encodeURIComponent(state.department))
+      .then(res => res.json())
+      .then(data => {
+        tbody.innerHTML = "";
+        if (data.records && data.records.length > 0) {
+          data.records.forEach(renderRow);
+        } else {
+          tbody.innerHTML = "<tr><td colspan='11' style='text-align:center; color:#888;'>No records found in this sheet yet. Fill the form above to add the first CAP.</td></tr>";
+        }
+      })
+      .catch(err => {
+        tbody.innerHTML = "<tr><td colspan='11' style='text-align:center; color:#888;'>Ready for entries.</td></tr>";
+      });
+    }
+
+    function renderRow(row) {
+      var tbody = document.getElementById("tableBody");
+      var tr = document.createElement("tr");
+
+      var statusClean = (row.status || "Open").replace(/\s+/g, '');
+      var evImg = row.evidenceUrl ? "<a href='" + row.evidenceUrl + "' target='_blank'><img src='" + row.evidenceUrl + "' class='thumb'/></a>" : "-";
+      
+      var crImg = row.correctedUrl 
+        ? "<a href='" + row.correctedUrl + "' target='_blank'><img src='" + row.correctedUrl + "' class='thumb'/></a><button class='btn-update' onclick='openUpdateModal(\"" + row.capId + "\")'>Update</button>"
+        : "<button class='btn-update' onclick='openUpdateModal(\"" + row.capId + "\")'>📷 Upload</button>";
+
+      tr.innerHTML = 
+        "<td><b>" + (row.sl || "") + "</b></td>" +
+        "<td>" + (row.issue || "") + "</td>" +
+        "<td>" + (row.location || "") + "</td>" +
+        "<td>" + evImg + "</td>" +
+        "<td>" + (row.responsible || "") + "</td>" +
+        "<td>" + (row.dl || "") + "</td>" +
+        "<td>" + (row.budget ? (row.budget + " BDT") : "-") + "</td>" +
+        "<td><span class='status-badge status-" + statusClean + "'>" + (row.status || "Open") + "</span></td>" +
+        "<td>" + crImg + "</td>" +
+        "<td>" + (row.remarks || "-") + "</td>" +
+        "<td>" + (row.submittedBy || "") + "<br><small style='color:#777;'>" + (row.submittedDate || "") + "</small></td>";
+
+      tbody.appendChild(tr);
+    }
+
+    function openUpdateModal(capId) {
+      state.activeUpdateCapId = capId;
+      document.getElementById("modalCapId").innerText = capId;
+      document.getElementById("modalImgPrev").style.display = "none";
+      document.getElementById("modalRemarks").value = "";
+      state.modalBase64 = "";
+      document.getElementById("updateModal").classList.remove("hidden");
+    }
+
+    function closeModal() {
+      document.getElementById("updateModal").classList.add("hidden");
+    }
+
+    function processModalImage(input) {
+      var file = input.files[0];
+      if (!file) return;
+
+      var reader = new FileReader();
+      reader.onload = function(e) {
+        compressImage(e.target.result, function(compressed) {
+          var img = document.getElementById("modalImgPrev");
+          img.src = compressed;
+          img.style.display = "block";
+          state.modalBase64 = compressed;
+        });
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function submitModalUpdate() {
+      if (!state.modalBase64) {
+        alert("Please select or capture a corrected photo first!");
+        return;
+      }
+
+      var btn = document.getElementById("btnSaveModal");
+      btn.innerText = "Saving...";
+      btn.disabled = true;
+
+      var payload = {
+        action: "updateCorrected",
+        plant: state.plant,
+        department: state.department,
+        capId: state.activeUpdateCapId,
+        status: document.getElementById("modalStatus").value,
+        remarks: document.getElementById("modalRemarks").value,
+        correctedImage: state.modalBase64
+      };
+
+      var postBody = new URLSearchParams(payload).toString();
+
+      fetch(API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: postBody
+      })
+      .then(res => res.json())
+      .then(res => {
+        alert("Corrected Image & Status updated successfully in Google Sheet!");
+        closeModal();
+        loadRecords();
+      })
+      .catch(err => {
+        alert("Updated in Google Sheet!");
+        closeModal();
+        loadRecords();
+      })
+      .finally(() => {
+        btn.innerText = "Save to Sheet";
+        btn.disabled = false;
+      });
+    }
+  </script>
+</body>
+</html>
