@@ -1,0 +1,210 @@
+/**
+ * EPIC Engineering CAP Engine
+ * Exact Layout Matching: EGMCL-2 Internal Engineering CAP-2026.xlsx
+ */
+
+function setupSheetHeaders(sheet, plant, department) {
+  sheet.clear();
+  
+  // Title & Header Block (Matches the Excel Inspection Report)
+  sheet.getRange("A1").setValue("INTERNAL SAFETY FOLLOW-UP INSPECTION REPORT - " + department.toUpperCase());
+  sheet.getRange("A1:J1").merge().setBackground("#003366").setFontColor("#FFFFFF").setFontWeight("bold").setFontSize(13);
+
+  sheet.getRange("A2").setValue("Factory Name:");
+  sheet.getRange("C2").setValue(plant);
+  sheet.getRange("A3").setValue("Plant Unit / Department:");
+  sheet.getRange("C3").setValue(department + " CAP");
+
+  // Excel Row 8 Standard Headers
+  var headers = [
+    "Sl", 
+    "Findings/Issue", 
+    "Location", 
+    "Pictorial Evidence", 
+    "DRI", 
+    "DL", 
+    "Budget", 
+    "Status", 
+    "Corrected Pictures", 
+    "Remarks",
+    "Submission Date",
+    "Submitted By",
+    "CAP ID"
+  ];
+
+  var headerRange = sheet.getRange(5, 1, 1, headers.length);
+  headerRange.setValues([headers]);
+  headerRange.setBackground("#1F4E79").setFontColor("#FFFFFF").setFontWeight("bold");
+  sheet.setFrozenRows(5);
+  
+  sheet.setColumnWidth(1, 50);   // Sl
+  sheet.setColumnWidth(2, 280);  // Findings/Issue
+  sheet.setColumnWidth(3, 160);  // Location
+  sheet.setColumnWidth(4, 150);  // Pictorial Evidence
+  sheet.setColumnWidth(5, 140);  // DRI
+  sheet.setColumnWidth(6, 110);  // DL
+  sheet.setColumnWidth(7, 90);   // Budget
+  sheet.setColumnWidth(8, 100);  // Status
+  sheet.setColumnWidth(9, 150);  // Corrected Pictures
+  sheet.setColumnWidth(10, 200); // Remarks
+}
+
+function getTargetSheet(plant, department) {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheetName = plant.replace(/\s+/g, '') + "_" + department.replace(/\s+/g, '');
+  var sheet = ss.getSheetByName(sheetName);
+
+  if (!sheet) {
+    sheet = ss.insertSheet(sheetName);
+    setupSheetHeaders(sheet, plant, department);
+  }
+  return sheet;
+}
+
+function doPost(e) {
+  var lock = LockService.getScriptLock();
+  lock.tryLock(30000);
+
+  try {
+    var raw = e.postData.contents;
+    var data = JSON.parse(raw);
+    var action = data.action || "create";
+    var sheet = getTargetSheet(data.plant, data.department);
+
+    if (action === "create") {
+      var evidenceUrl = "";
+      if (data.evidenceImage && data.evidenceImage.base64) {
+        evidenceUrl = saveImageFile(data.evidenceImage.base64, data.plant + "_" + data.department + "_Evidence");
+      }
+
+      var correctedUrl = "";
+      if (data.correctedImage && data.correctedImage.base64) {
+        correctedUrl = saveImageFile(data.correctedImage.base64, data.plant + "_" + data.department + "_Corrected");
+      }
+
+      var lastRow = sheet.getLastRow();
+      var sl = (lastRow >= 5) ? (lastRow - 4) : 1;
+      var capId = "CAP-" + data.plant.replace(/\s+/g, '') + "-" + new Date().getTime().toString().slice(-6);
+
+      var now = new Date();
+      var dateStr = Utilities.formatDate(now, "Asia/Dhaka", "dd-MMM-yyyy");
+      var timeStr = Utilities.formatDate(now, "Asia/Dhaka", "hh:mm a");
+
+      // Append row matching the Excel sheet column layout exactly
+      sheet.appendRow([
+        sl,
+        data.issue || "",
+        data.location || "",
+        evidenceUrl,
+        data.responsible || "",
+        data.dl || "",
+        data.budget || "",
+        data.status || "Open",
+        correctedUrl,
+        data.remarks || "",
+        dateStr + " " + timeStr,
+        data.submittedBy || "",
+        capId
+      ]);
+
+      return ContentService.createTextOutput(JSON.stringify({
+        status: "success",
+        capId: capId
+      })).setMimeType(ContentService.MimeType.JSON);
+
+    } else if (action === "updateCorrected") {
+      var capId = data.capId;
+      var correctedUrl = "";
+
+      if (data.correctedImage && data.correctedImage.base64) {
+        correctedUrl = saveImageFile(data.correctedImage.base64, data.plant + "_Corrected_" + capId);
+      }
+
+      var values = sheet.getDataRange().getValues();
+      var updated = false;
+
+      // Col 13 (index 12) holds CAP ID
+      for (var r = 5; r < values.length; r++) {
+        if (values[r][12] == capId) {
+          var rowNum = r + 1;
+          if (correctedUrl) {
+            sheet.getRange(rowNum, 9).setValue(correctedUrl); // Col I: Corrected Pictures
+          }
+          if (data.status) {
+            sheet.getRange(rowNum, 8).setValue(data.status); // Col H: Status
+          }
+          if (data.remarks) {
+            var oldRem = values[r][9] || "";
+            sheet.getRange(rowNum, 10).setValue(oldRem ? (oldRem + " | " + data.remarks) : data.remarks);
+          }
+          updated = true;
+          break;
+        }
+      }
+
+      return ContentService.createTextOutput(JSON.stringify({
+        status: updated ? "success" : "not_found",
+        correctedUrl: correctedUrl
+      })).setMimeType(ContentService.MimeType.JSON);
+    }
+
+  } catch (err) {
+    return ContentService.createTextOutput(JSON.stringify({
+      status: "error",
+      message: err.toString()
+    })).setMimeType(ContentService.MimeType.JSON);
+
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+function doGet(e) {
+  var plant = e.parameter.plant || "EGMCL 1";
+  var department = e.parameter.department || "Electrical";
+  var sheet = getTargetSheet(plant, department);
+
+  if (sheet.getLastRow() <= 5) {
+    return ContentService.createTextOutput(JSON.stringify({ status: "success", records: [] }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+
+  var values = sheet.getDataRange().getValues();
+  var records = [];
+
+  // Data starts at Row index 5 (Row 6 in sheet)
+  for (var i = 5; i < values.length; i++) {
+    var row = values[i];
+    records.push({
+      sl: row[0],
+      issue: row[1],
+      location: row[2],
+      evidenceUrl: row[3],
+      responsible: row[4],
+      dl: row[5],
+      budget: row[6],
+      status: row[7],
+      correctedUrl: row[8],
+      remarks: row[9],
+      submittedDate: row[10],
+      submittedBy: row[11],
+      capId: row[12]
+    });
+  }
+
+  return ContentService.createTextOutput(JSON.stringify({ status: "success", records: records }))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+function saveImageFile(base64Data, prefix) {
+  try {
+    var cleanBase64 = base64Data.split(",")[1] || base64Data;
+    var decoded = Utilities.base64Decode(cleanBase64);
+    var blob = Utilities.newBlob(decoded, "image/jpeg", prefix + "_" + new Date().getTime() + ".jpg");
+    var file = DriveApp.createFile(blob);
+    file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+    return "https://drive.google.com/uc?export=view&id=" + file.getId();
+  } catch (e) {
+    return "";
+  }
+}
