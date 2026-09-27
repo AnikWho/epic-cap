@@ -15,7 +15,7 @@
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; }
-    body { background-color: var(--bg); color: var(--text); padding-bottom: 70px; }
+    body { background-color: var(--bg); color: var(--text); padding-bottom: 75px; }
 
     header {
       background: var(--primary);
@@ -101,7 +101,6 @@
     }
     input:focus, select:focus, textarea:focus { outline: none; border-color: var(--primary); background: #fff; }
 
-    /* Media Selector Box */
     .media-box {
       border: 2px dashed #90caf9;
       background: #f8fbfe;
@@ -169,7 +168,7 @@
       border: 1px solid #337ab7;
       white-space: nowrap;
     }
-    td { padding: 8px; border: 1px solid var(--border); vertical-align: top; }
+    td { padding: 8px; border: 1px solid var(--border); vertical-align: middle; }
     tr:nth-child(even) { background-color: #fbfcfd; }
 
     .status-badge {
@@ -183,17 +182,33 @@
     .status-InProgress { background: #fef3c7; color: #92400e; }
     .status-Completed { background: #dcfce7; color: #166534; }
 
-    .thumb { width: 55px; height: 55px; object-fit: cover; border-radius: 4px; border: 1px solid #bbb; cursor: pointer; display: block; }
+    /* Always visible log pictures on mobile and PC */
+    .table-img-cell {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      min-width: 80px;
+    }
+    .visible-log-img {
+      width: 75px;
+      height: 75px;
+      object-fit: cover;
+      border-radius: 6px;
+      border: 1px solid #b0bec5;
+      background: #eceff1;
+      display: block;
+    }
     .btn-update {
       background: #e3f2fd;
       color: #0d47a1;
       border: 1px solid #90caf9;
-      padding: 5px 8px;
+      padding: 4px 8px;
       border-radius: 4px;
       font-size: 0.72rem;
       font-weight: 700;
       cursor: pointer;
-      margin-top: 4px;
       display: inline-block;
     }
 
@@ -214,7 +229,6 @@
       padding: 18px;
     }
 
-    /* Fixed Bottom-Right Developer Tag */
     .developer-credit {
       position: fixed;
       bottom: 10px;
@@ -236,7 +250,6 @@
 </head>
 <body>
 
-  <!-- Invisible target to eliminate CORS restrictions -->
   <iframe name="hidden_iframe" id="hidden_iframe" style="display:none;" onload="if(submitted){handleSubmissionDone();}"></iframe>
 
   <header>
@@ -254,35 +267,15 @@
       <span id="navActionText" style="font-weight: 700; color: var(--primary);"></span>
     </div>
 
-    <!-- 1. PLANTS (Central Removed, 5 Plants) -->
+    <!-- 1. PLANTS -->
     <div id="viewPlants">
       <h2 style="font-size: 1.05rem; margin-bottom: 12px; color: var(--primary);">Select Manufacturing Plant</h2>
       <div class="grid-cards">
-        <div class="card" onclick="selectPlant('EGMCL 1')">
-          <div class="card-icon">🏭</div>
-          <div class="card-title">EGMCL 1</div>
-          <div class="card-subtitle">Epic Garments Manufacturing Co.Ltd Unit-1</div>
-        </div>
-        <div class="card" onclick="selectPlant('EGMCL 2')">
-          <div class="card-icon">🏭</div>
-          <div class="card-title">EGMCL 2</div>
-          <div class="card-subtitle">Epic Garments Manufacturing Co.Ltd Unit-2</div>
-        </div>
-        <div class="card" onclick="selectPlant('PGCL')">
-          <div class="card-icon">🏬</div>
-          <div class="card-title">PGCL</div>
-          <div class="card-subtitle">Pearl Garments Co.Ltd</div>
-        </div>
-        <div class="card" onclick="selectPlant('CIPL')">
-          <div class="card-icon">🏗️</div>
-          <div class="card-title">CIPL</div>
-          <div class="card-subtitle">Cosmopolitan Industries Pvt.Ltd.</div>
-        </div>
-        <div class="card" onclick="selectPlant('GTL')">
-          <div class="card-icon">🏢</div>
-          <div class="card-title">GTL</div>
-          <div class="card-subtitle">Green Textile Ltd.</div>
-        </div>
+        <div class="card" onclick="selectPlant('EGMCL 1')"><div class="card-icon">🏭</div><div class="card-title">EGMCL 1</div><div class="card-subtitle">Epic Garments Unit-1</div></div>
+        <div class="card" onclick="selectPlant('EGMCL 2')"><div class="card-icon">🏭</div><div class="card-title">EGMCL 2</div><div class="card-subtitle">Epic Garments Unit-2</div></div>
+        <div class="card" onclick="selectPlant('PGCL')"><div class="card-icon">🏬</div><div class="card-title">PGCL</div><div class="card-subtitle">Pearl Garments Co.</div></div>
+        <div class="card" onclick="selectPlant('CIPL')"><div class="card-icon">🏗️</div><div class="card-title">CIPL</div><div class="card-subtitle">Cosmopolitan Ind.</div></div>
+        <div class="card" onclick="selectPlant('GTL')"><div class="card-icon">🏢</div><div class="card-title">GTL</div><div class="card-subtitle">Garment Tech Ltd.</div></div>
       </div>
     </div>
 
@@ -290,30 +283,14 @@
     <div id="viewDepartments" class="hidden">
       <h2 style="font-size: 1.05rem; margin-bottom: 12px; color: var(--primary);" id="deptHeader">Select Category</h2>
       <div class="grid-cards">
-        <div class="card" onclick="selectDepartment('Electrical')">
-          <div class="card-icon">⚡</div>
-          <div class="card-title">1. Electrical CAP</div>
-          <div class="card-subtitle">Substation, Panels, DB, SLD</div>
-        </div>
-        <div class="card" onclick="selectDepartment('Mechanical')">
-          <div class="card-icon">⚙️</div>
-          <div class="card-title">2. Mechanical CAP</div>
-          <div class="card-subtitle">Boiler, Compressor, Pumps</div>
-        </div>
-        <div class="card" onclick="selectDepartment('Civil')">
-          <div class="card-icon">🧱</div>
-          <div class="card-title">3. Civil CAP</div>
-          <div class="card-subtitle">Structural, Cracks, Loading</div>
-        </div>
-        <div class="card" onclick="selectDepartment('General')">
-          <div class="card-icon">🛡️</div>
-          <div class="card-title">4. General CAP</div>
-          <div class="card-subtitle">Housekeeping, Safety EHS</div>
-        </div>
+        <div class="card" onclick="selectDepartment('Electrical')"><div class="card-icon">⚡</div><div class="card-title">1. Electrical CAP</div><div class="card-subtitle">Substation, Panels, DB, SLD</div></div>
+        <div class="card" onclick="selectDepartment('Mechanical')"><div class="card-icon">⚙️</div><div class="card-title">2. Mechanical CAP</div><div class="card-subtitle">Boiler, Compressor, Pumps</div></div>
+        <div class="card" onclick="selectDepartment('Civil')"><div class="card-icon">🧱</div><div class="card-title">3. Civil CAP</div><div class="card-subtitle">Structural, Cracks, Loading</div></div>
+        <div class="card" onclick="selectDepartment('General')"><div class="card-icon">🛡️</div><div class="card-title">4. General CAP</div><div class="card-subtitle">Housekeeping, Safety EHS</div></div>
       </div>
     </div>
 
-    <!-- 3. COMBINED FORM AND LOG VIEW -->
+    <!-- 3. FORM AND LOG VIEW -->
     <div id="viewEntryAndLog" class="hidden">
       
       <div class="form-panel">
@@ -348,7 +325,7 @@
             </div>
 
             <div class="form-group">
-              <label>Budget (BDT)</label>
+              <label>Budget (Amount only)</label>
               <input type="number" name="budget" id="subBudget" placeholder="e.g. 1080" />
             </div>
 
@@ -366,7 +343,7 @@
               <input type="text" name="submittedBy" id="subBy" required placeholder="e.g. Md. Jamirul Islam" />
             </div>
 
-            <!-- Evidence Photo: Select from Camera OR Device Gallery -->
+            <!-- Evidence Photo -->
             <div class="form-group">
               <label>Pictorial Evidence 📸</label>
               <div class="media-box">
@@ -377,7 +354,7 @@
               </div>
             </div>
 
-            <!-- Corrected Photo: Select from Camera OR Device Gallery -->
+            <!-- Corrected Photo -->
             <div class="form-group">
               <label>Corrected Picture (Optional) ✅</label>
               <div class="media-box">
@@ -407,17 +384,18 @@
         <table>
           <thead>
             <tr>
-              <th style="width: 40px;">Sl</th>
+              <th style="width: 35px;">Sl</th>
               <th>Findings / Issue</th>
               <th>Location</th>
-              <th>Pictorial Evidence</th>
+              <th style="width: 90px; text-align:center;">Pictorial Evidence</th>
               <th>DRI</th>
               <th>DL</th>
               <th>Budget</th>
               <th>Status</th>
-              <th>Corrected Pictures</th>
+              <th style="width: 90px; text-align:center;">Corrected Pictures</th>
               <th>Remarks</th>
-              <th>Submitted Info</th>
+              <th>Submitted Date</th>
+              <th>Submitted By</th>
             </tr>
           </thead>
           <tbody id="tableBody"></tbody>
@@ -470,7 +448,6 @@
     </div>
   </div>
 
-  <!-- Downright Side Credit Badge -->
   <div class="developer-credit">
     Developed By: Fahim Shaharyar Anik | MTO | Head Office
   </div>
@@ -488,6 +465,12 @@
     };
 
     var submitted = false;
+
+    function getFormattedDate() {
+      var d = new Date();
+      var months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+      return d.getDate() + " " + months[d.getMonth()] + " " + d.getFullYear();
+    }
 
     function selectPlant(name) {
       state.plant = name;
@@ -597,22 +580,28 @@
       btn.innerText = "Syncing with Google Sheet...";
       btn.disabled = true;
 
-      // Temporary optimistic insertion on the screen
+      // Optimistic Row Insertion with guaranteed visible images
       var tbody = document.getElementById("tableBody");
       var tempTr = document.createElement("tr");
       tempTr.id = "tempLatestRow";
+      
+      var evImgHtml = state.evidenceBase64 ? "<div class='table-img-cell'><img src='" + state.evidenceBase64 + "' class='visible-log-img'/></div>" : "<span style='color:#999;'>No image</span>";
+      var crImgHtml = state.correctedBase64 ? "<div class='table-img-cell'><img src='" + state.correctedBase64 + "' class='visible-log-img'/></div>" : "<span style='color:#999;'>No image</span>";
+
       tempTr.innerHTML = 
         "<td><b>#</b></td>" +
         "<td>" + document.getElementById("subIssue").value + "</td>" +
         "<td>" + document.getElementById("subLoc").value + "</td>" +
-        "<td>" + (state.evidenceBase64 ? "<img src='" + state.evidenceBase64 + "' class='thumb'/>" : "-") + "</td>" +
+        "<td>" + evImgHtml + "</td>" +
         "<td>" + document.getElementById("subResp").value + "</td>" +
         "<td>" + document.getElementById("subDl").value + "</td>" +
-        "<td>" + (document.getElementById("subBudget").value ? document.getElementById("subBudget").value + " BDT" : "-") + "</td>" +
+        "<td>" + (document.getElementById("subBudget").value || "-") + "</td>" +
         "<td><span class='status-badge status-" + document.getElementById("subStatus").value.replace(/\s+/g, '') + "'>" + document.getElementById("subStatus").value + "</span></td>" +
-        "<td>" + (state.correctedBase64 ? "<img src='" + state.correctedBase64 + "' class='thumb'/>" : "-") + "</td>" +
+        "<td>" + crImgHtml + "</td>" +
         "<td>" + (document.getElementById("subRemarks").value || "-") + "</td>" +
+        "<td>" + getFormattedDate() + "</td>" +
         "<td>" + document.getElementById("subBy").value + "<br><small style='color:green;'>Syncing...</small></td>";
+      
       tbody.prepend(tempTr);
     }
 
@@ -640,13 +629,13 @@
       if (data && data.records && data.records.length > 0) {
         data.records.forEach(renderRow);
       } else {
-        tbody.innerHTML = "<tr><td colspan='11' style='text-align:center; color:#888;'>No records found in this sheet yet. Fill the form above to add the first CAP.</td></tr>";
+        tbody.innerHTML = "<tr><td colspan='12' style='text-align:center; color:#888;'>No records found in this sheet yet. Fill the form above to add the first CAP.</td></tr>";
       }
     };
 
     function loadRecords() {
       var tbody = document.getElementById("tableBody");
-      tbody.innerHTML = "<tr><td colspan='11' style='text-align:center;'>Loading CAP records from Google Sheets...</td></tr>";
+      tbody.innerHTML = "<tr><td colspan='12' style='text-align:center;'>Loading CAP records from Google Sheets...</td></tr>";
 
       var script = document.createElement('script');
       script.src = API_URL + "?plant=" + encodeURIComponent(state.plant) + "&department=" + encodeURIComponent(state.department) + "&callback=handleSheetData&t=" + new Date().getTime();
@@ -659,24 +648,30 @@
       var tr = document.createElement("tr");
 
       var statusClean = (row.status || "Open").replace(/\s+/g, '');
-      var evImg = row.evidenceUrl ? "<a href='" + row.evidenceUrl + "' target='_blank'><img src='" + row.evidenceUrl + "' class='thumb'/></a>" : "-";
       
+      // Always visible thumbnail for Evidence
+      var evImg = row.evidenceUrl 
+        ? "<div class='table-img-cell'><img src='" + row.evidenceUrl + "' class='visible-log-img' loading='lazy' onerror=\"this.src='https://placehold.co/75x75?text=Image';\" /></div>" 
+        : "<span style='color:#999;'>No image</span>";
+      
+      // Always visible thumbnail for Corrected Picture + update action button
       var crImg = row.correctedUrl 
-        ? "<a href='" + row.correctedUrl + "' target='_blank'><img src='" + row.correctedUrl + "' class='thumb'/></a><button class='btn-update' onclick='openUpdateModal(\"" + row.capId + "\")'>Update</button>"
-        : "<button class='btn-update' onclick='openUpdateModal(\"" + row.capId + "\")'>📷 Upload</button>";
+        ? "<div class='table-img-cell'><img src='" + row.correctedUrl + "' class='visible-log-img' loading='lazy' onerror=\"this.src='https://placehold.co/75x75?text=Image';\" /><button class='btn-update' onclick='openUpdateModal(\"" + row.capId + "\")'>Update</button></div>"
+        : "<div class='table-img-cell'><span style='color:#999; margin-bottom:4px;'>Pending</span><button class='btn-update' onclick='openUpdateModal(\"" + row.capId + "\")'>📷 Upload</button></div>";
 
       tr.innerHTML = 
         "<td><b>" + (row.sl || "") + "</b></td>" +
         "<td>" + (row.issue || "") + "</td>" +
         "<td>" + (row.location || "") + "</td>" +
-        "<td>" + evImg + "</td>" +
+        "<td style='text-align:center;'>" + evImg + "</td>" +
         "<td>" + (row.responsible || "") + "</td>" +
         "<td>" + (row.dl || "") + "</td>" +
-        "<td>" + (row.budget ? (row.budget + " BDT") : "-") + "</td>" +
+        "<td>" + (row.budget || "-") + "</td>" +
         "<td><span class='status-badge status-" + statusClean + "'>" + (row.status || "Open") + "</span></td>" +
-        "<td>" + crImg + "</td>" +
+        "<td style='text-align:center;'>" + crImg + "</td>" +
         "<td>" + (row.remarks || "-") + "</td>" +
-        "<td>" + (row.submittedBy || "") + "<br><small style='color:#777;'>" + (row.submittedDate || "") + "</small></td>";
+        "<td>" + (row.submittedDate || "") + "</td>" +
+        "<td>" + (row.submittedBy || "") + "</td>";
 
       tbody.appendChild(tr);
     }
