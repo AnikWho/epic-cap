@@ -40,7 +40,7 @@
     header h1 { font-size: 1.15rem; font-weight: 700; }
     .badge { background: var(--accent); padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; }
 
-    .container { max-width: 1350px; margin: 15px auto; padding: 0 12px; }
+    .container { max-width: 1400px; margin: 15px auto; padding: 0 12px; }
 
     .breadcrumb-bar {
       display: flex;
@@ -62,7 +62,6 @@
       cursor: pointer;
     }
 
-    /* 6 Plants Layout */
     .grid-cards {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -122,7 +121,6 @@
     }
     .dept-card:hover { border-color: var(--primary); transform: translateY(-2px); }
 
-    /* Form Styles */
     .form-panel {
       background: white;
       padding: 20px;
@@ -181,7 +179,7 @@
       margin-top: 18px;
     }
 
-    /* 16 Column Exact Log Table */
+    /* 16 Column Table */
     .table-container {
       background: white;
       border-radius: 8px;
@@ -199,7 +197,7 @@
       justify-content: space-between;
       align-items: center;
     }
-    table { width: 100%; border-collapse: collapse; min-width: 1300px; font-size: 0.82rem; border: 1px solid var(--border); }
+    table { width: 100%; border-collapse: collapse; min-width: 1450px; font-size: 0.82rem; border: 1px solid var(--border); }
     th {
       background: #204d74;
       color: white;
@@ -226,7 +224,6 @@
     .status-progress { background: var(--yellow-bg); color: var(--yellow); border: 1px solid #fff59d; }
     .status-open { background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; }
 
-    /* Fast-loading Square Images */
     .square-img {
       width: 75px;
       height: 75px;
@@ -239,20 +236,36 @@
       margin: 0 auto;
     }
 
+    .btn-action-group {
+      display: flex;
+      gap: 4px;
+      align-items: center;
+    }
     .btn-edit-row {
       background: #f1f5f9;
       color: var(--primary);
       border: 1px solid #cbd5e1;
-      padding: 4px 8px;
+      padding: 4px 7px;
       border-radius: 4px;
       font-size: 0.72rem;
       font-weight: 700;
       cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 3px;
+      white-space: nowrap;
     }
     .btn-edit-row:hover { background: #e2e8f0; border-color: var(--primary); }
+
+    .btn-delete-row {
+      background: #fee2e2;
+      color: #991b1b;
+      border: 1px solid #fecaca;
+      padding: 4px 7px;
+      border-radius: 4px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .btn-delete-row:hover { background: #fca5a5; }
 
     .btn-update {
       background: #e3f2fd;
@@ -305,7 +318,15 @@
 </head>
 <body>
 
+  <!-- Hidden execution forms -->
   <iframe name="hidden_iframe" id="hidden_iframe" style="display:none;" onload="if(submitted){handleSubmissionDone();}"></iframe>
+
+  <form id="deleteForm" method="POST" target="hidden_iframe" style="display:none;">
+    <input type="hidden" name="action" value="deleteRow" />
+    <input type="hidden" name="plant" id="delPlant" />
+    <input type="hidden" name="department" id="delDept" />
+    <input type="hidden" name="capId" id="delCapId" />
+  </form>
 
   <header>
     <h1>EPIC Engineering CAP</h1>
@@ -322,7 +343,7 @@
       <span id="navActionText" style="font-weight: 700; color: var(--primary);"></span>
     </div>
 
-    <!-- 1. 6 PLANTS (Correct Full Names & Cards) -->
+    <!-- 1. 6 PLANTS -->
     <div id="viewPlants">
       <h2 style="font-size: 1.05rem; margin-bottom: 12px; color: var(--primary);">Select Manufacturing Plant</h2>
       <div class="grid-cards">
@@ -481,7 +502,6 @@
               <input type="text" name="submittedBy" id="subBy" required placeholder="e.g. Md. Jamirul Islam" />
             </div>
 
-            <!-- Evidence Photo -->
             <div class="form-group">
               <label>Pictorial Evidence 📸</label>
               <div class="media-box">
@@ -491,7 +511,6 @@
               </div>
             </div>
 
-            <!-- Corrected Photo -->
             <div class="form-group">
               <label>Corrected Picture (Optional) ✅</label>
               <div class="media-box">
@@ -511,7 +530,7 @@
         </form>
       </div>
 
-      <!-- Live Sheet Log Table (Exact 16 Columns) -->
+      <!-- Live Sheet Log Table (CAP ID placed after Submitted by) -->
       <div class="excel-header">
         <span id="tableHeaderTitle">INTERNAL SAFETY FOLLOW-UP INSPECTION REPORT</span>
         <button class="btn-nav" style="color:#000;" onclick="loadRecords()">🔄 Reload Sheet Data</button>
@@ -536,6 +555,7 @@
               <th>Input date</th>
               <th>Submitted by</th>
               <th>CAP ID</th>
+              <th style="width: 120px; text-align:center;">Actions</th>
             </tr>
           </thead>
           <tbody id="tableBody"></tbody>
@@ -546,7 +566,7 @@
 
   </div>
 
-  <!-- POPUP MODAL: Inline Row Data Editor (Dates, Int/Ext, PO Value, PO Number) -->
+  <!-- POPUP MODAL: Inline Row Editor -->
   <div id="editRowModal" class="modal-overlay hidden">
     <div class="modal">
       <h3 style="color:var(--primary); margin-bottom:8px;">Edit Log Record</h3>
@@ -559,7 +579,7 @@
         <input type="hidden" name="capId" id="editModalCapId" />
 
         <div class="form-group" style="margin-bottom:10px;">
-          <label>Deadline (DL)</label>
+          <label>Deadline</label>
           <input type="date" name="dl" id="editModalDl" />
         </div>
 
@@ -594,7 +614,7 @@
     </div>
   </div>
 
-  <!-- POPUP MODAL: Update Corrected Picture -->
+  <!-- POPUP MODAL: Corrected Picture Update -->
   <div id="updateModal" class="modal-overlay hidden">
     <div class="modal">
       <h3 style="color:var(--primary); margin-bottom:8px;">Upload Corrected Picture</h3>
@@ -730,6 +750,7 @@
         document.getElementById("capForm").action = API_URL;
         document.getElementById("modalForm").action = API_URL;
         document.getElementById("editRowForm").action = API_URL;
+        document.getElementById("deleteForm").action = API_URL;
 
         document.getElementById("hiddenPlant").value = state.plant;
         document.getElementById("hiddenDept").value = state.department;
@@ -785,7 +806,6 @@
       reader.readAsDataURL(file);
     }
 
-    // Fast Square Compression (~35KB payload, instant loading)
     function compressSquareFast(base64Str, callback) {
       var img = new Image();
       img.onload = function() {
@@ -846,6 +866,7 @@
         "<td>" + (document.getElementById("subRemarks").value || "-") + "</td>" +
         "<td>" + formatDateForDisplay(new Date()) + "</td>" +
         "<td>" + document.getElementById("subBy").value + "<br><small style='color:green;'>Syncing...</small></td>" +
+        "<td>CAP-SYNC</td>" +
         "<td>-</td>";
       
       tbody.prepend(tempTr);
@@ -853,7 +874,7 @@
 
     function handleSubmissionDone() {
       submitted = false;
-      alert("CAP Successfully Added & Saved to Google Sheet!");
+      alert("CAP Log Synced & Successfully Updated in Google Sheet!");
       var btn = document.getElementById("btnSaveCap");
       if (btn) {
         btn.innerText = "Submit to Google Sheet";
@@ -868,7 +889,30 @@
       state.evidenceBase64 = "";
       state.correctedBase64 = "";
       
-      setTimeout(loadRecords, 2000);
+      setTimeout(loadRecords, 1800);
+    }
+
+    // Delete Log & Sheet Row
+    function deleteCapRow(capId) {
+      if (!confirm("Are you sure you want to delete CAP [" + capId + "]? This will permanently remove it from both this website and Google Sheets.")) {
+        return;
+      }
+
+      document.getElementById("delPlant").value = state.plant;
+      document.getElementById("delDept").value = state.department;
+      document.getElementById("delCapId").value = capId;
+
+      submitted = true;
+      document.getElementById("deleteForm").submit();
+
+      // Instantly remove row from interface
+      state.records = state.records.filter(r => r.capId !== capId);
+      var tbody = document.getElementById("tableBody");
+      tbody.innerHTML = "";
+      state.records.forEach((r, idx) => {
+        r.sl = idx + 1; // re-index locally
+        renderRow(r);
+      });
     }
 
     window.handleSheetData = function(data) {
@@ -878,13 +922,13 @@
         state.records = data.records;
         data.records.forEach(renderRow);
       } else {
-        tbody.innerHTML = "<tr><td colspan='16' style='text-align:center; color:#888;'>No records found in this sheet yet. Fill the form above to add the first CAP.</td></tr>";
+        tbody.innerHTML = "<tr><td colspan='17' style='text-align:center; color:#888;'>No records found in this sheet yet. Fill the form above to add the first CAP.</td></tr>";
       }
     };
 
     function loadRecords() {
       var tbody = document.getElementById("tableBody");
-      tbody.innerHTML = "<tr><td colspan='16' style='text-align:center;'>Loading CAP records from Google Sheets...</td></tr>";
+      tbody.innerHTML = "<tr><td colspan='17' style='text-align:center;'>Loading CAP records from Google Sheets...</td></tr>";
 
       var script = document.createElement('script');
       script.src = API_URL + "?plant=" + encodeURIComponent(state.plant) + "&department=" + encodeURIComponent(state.department) + "&callback=handleSheetData&t=" + new Date().getTime();
@@ -920,7 +964,13 @@
         "<td>" + (row.remarks || "-") + "</td>" +
         "<td>" + formatDateForDisplay(row.submittedDate) + "</td>" +
         "<td>" + (row.submittedBy || "") + "</td>" +
-        "<td><button class='btn-edit-row' onclick='openEditRowModal(\"" + row.capId + "\")'>✏️ Edit</button></td>";
+        "<td><code style='font-size:0.75rem; color:#0d47a1;'>" + (row.capId || "") + "</code></td>" +
+        "<td style='text-align:center;'>" +
+          "<div class='btn-action-group'>" +
+            "<button class='btn-edit-row' onclick='openEditRowModal(\"" + row.capId + "\")'>✏️ Edit</button>" +
+            "<button class='btn-delete-row' onclick='deleteCapRow(\"" + row.capId + "\")'>🗑️ Delete</button>" +
+          "</div>" +
+        "</td>";
 
       tbody.appendChild(tr);
     }
