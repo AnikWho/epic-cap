@@ -40,7 +40,7 @@
     header h1 { font-size: 1.15rem; font-weight: 700; }
     .badge { background: var(--accent); padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; }
 
-    .container { max-width: 1280px; margin: 15px auto; padding: 0 12px; }
+    .container { max-width: 1350px; margin: 15px auto; padding: 0 12px; }
 
     .breadcrumb-bar {
       display: flex;
@@ -62,6 +62,7 @@
       cursor: pointer;
     }
 
+    /* 6 Plants Layout */
     .grid-cards {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -121,6 +122,7 @@
     }
     .dept-card:hover { border-color: var(--primary); transform: translateY(-2px); }
 
+    /* Form Styles */
     .form-panel {
       background: white;
       padding: 20px;
@@ -164,7 +166,7 @@
       opacity: 0;
       cursor: pointer;
     }
-    .preview-img { width: 80px; height: 80px; object-fit: cover; aspect-ratio: 1/1; margin-top: 8px; border-radius: 6px; display: none; }
+    .preview-img { width: 75px; height: 75px; object-fit: cover; aspect-ratio: 1/1; margin-top: 8px; border-radius: 6px; display: none; }
 
     .btn-submit {
       background: var(--primary);
@@ -179,6 +181,7 @@
       margin-top: 18px;
     }
 
+    /* 16 Column Exact Log Table */
     .table-container {
       background: white;
       border-radius: 8px;
@@ -196,7 +199,7 @@
       justify-content: space-between;
       align-items: center;
     }
-    table { width: 100%; border-collapse: collapse; min-width: 1150px; font-size: 0.83rem; border: 1px solid var(--border); }
+    table { width: 100%; border-collapse: collapse; min-width: 1300px; font-size: 0.82rem; border: 1px solid var(--border); }
     th {
       background: #204d74;
       color: white;
@@ -206,7 +209,7 @@
       border: 1px solid #337ab7;
       white-space: nowrap;
     }
-    td { padding: 8px; border: 1px solid var(--border); vertical-align: middle; }
+    td { padding: 7px 8px; border: 1px solid var(--border); vertical-align: middle; }
     tr:nth-child(even) { background-color: #fbfcfd; }
 
     .status-badge {
@@ -223,9 +226,10 @@
     .status-progress { background: var(--yellow-bg); color: var(--yellow); border: 1px solid #fff59d; }
     .status-open { background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; }
 
+    /* Fast-loading Square Images */
     .square-img {
-      width: 80px;
-      height: 80px;
+      width: 75px;
+      height: 75px;
       aspect-ratio: 1 / 1;
       object-fit: cover;
       border-radius: 6px;
@@ -235,20 +239,20 @@
       margin: 0 auto;
     }
 
-    /* Date buttons in table cells */
-    .cell-date-btn {
+    .btn-edit-row {
       background: #f1f5f9;
-      border: 1px dashed #64748b;
-      padding: 5px 8px;
+      color: var(--primary);
+      border: 1px solid #cbd5e1;
+      padding: 4px 8px;
       border-radius: 4px;
-      font-size: 0.78rem;
-      font-weight: 600;
+      font-size: 0.72rem;
+      font-weight: 700;
       cursor: pointer;
-      display: inline-block;
-      color: #0f172a;
-      white-space: nowrap;
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
     }
-    .cell-date-btn:hover { background: #e2e8f0; border-color: var(--primary); }
+    .btn-edit-row:hover { background: #e2e8f0; border-color: var(--primary); }
 
     .btn-update {
       background: #e3f2fd;
@@ -275,7 +279,7 @@
     .modal {
       background: white;
       width: 90%;
-      max-width: 420px;
+      max-width: 460px;
       border-radius: 8px;
       padding: 18px;
     }
@@ -318,18 +322,14 @@
       <span id="navActionText" style="font-weight: 700; color: var(--primary);"></span>
     </div>
 
-    <!-- 1. PLANTS (6 Plants) -->
+    <!-- 1. 6 PLANTS (Correct Full Names & Cards) -->
     <div id="viewPlants">
       <h2 style="font-size: 1.05rem; margin-bottom: 12px; color: var(--primary);">Select Manufacturing Plant</h2>
       <div class="grid-cards">
         
-        <!-- EGMCL 1 -->
         <div class="card" onclick="selectPlant('EGMCL 1')">
           <div>
-            <div class="card-top">
-              <div class="card-icon">🏭</div>
-              <div class="card-title">EGMCL 1</div>
-            </div>
+            <div class="card-top"><div class="card-icon">🏭</div><div class="card-title">EGMCL 1</div></div>
             <div class="card-fullname">Epic Garments Manufacturing Co. Ltd. Unit-1</div>
           </div>
           <div class="card-summary-box">
@@ -340,13 +340,9 @@
           </div>
         </div>
 
-        <!-- EGMCL 2 -->
         <div class="card" onclick="selectPlant('EGMCL 2')">
           <div>
-            <div class="card-top">
-              <div class="card-icon">🏭</div>
-              <div class="card-title">EGMCL 2</div>
-            </div>
+            <div class="card-top"><div class="card-icon">🏭</div><div class="card-title">EGMCL 2</div></div>
             <div class="card-fullname">Epic Garments Manufacturing Co. Ltd. Unit-2</div>
           </div>
           <div class="card-summary-box">
@@ -357,13 +353,9 @@
           </div>
         </div>
 
-        <!-- EGMCL 7 -->
         <div class="card" onclick="selectPlant('EGMCL 7')">
           <div>
-            <div class="card-top">
-              <div class="card-icon">🏭</div>
-              <div class="card-title">EGMCL 7</div>
-            </div>
+            <div class="card-top"><div class="card-icon">🏭</div><div class="card-title">EGMCL 7</div></div>
             <div class="card-fullname">Epic Garments Manufacturing Co. Ltd. Unit-7</div>
           </div>
           <div class="card-summary-box">
@@ -374,13 +366,9 @@
           </div>
         </div>
 
-        <!-- PGCL -->
         <div class="card" onclick="selectPlant('PGCL')">
           <div>
-            <div class="card-top">
-              <div class="card-icon">🏬</div>
-              <div class="card-title">PGCL</div>
-            </div>
+            <div class="card-top"><div class="card-icon">🏬</div><div class="card-title">PGCL</div></div>
             <div class="card-fullname">Pearl Garments Co. Ltd.</div>
           </div>
           <div class="card-summary-box">
@@ -391,13 +379,9 @@
           </div>
         </div>
 
-        <!-- CIPL -->
         <div class="card" onclick="selectPlant('CIPL')">
           <div>
-            <div class="card-top">
-              <div class="card-icon">🏗️</div>
-              <div class="card-title">CIPL</div>
-            </div>
+            <div class="card-top"><div class="card-icon">🏗️</div><div class="card-title">CIPL</div></div>
             <div class="card-fullname">Cosmopolitan Industries Pvt. Ltd.</div>
           </div>
           <div class="card-summary-box">
@@ -408,13 +392,9 @@
           </div>
         </div>
 
-        <!-- GTL -->
         <div class="card" onclick="selectPlant('GTL')">
           <div>
-            <div class="card-top">
-              <div class="card-icon">🏢</div>
-              <div class="card-title">GTL</div>
-            </div>
+            <div class="card-top"><div class="card-icon">🏢</div><div class="card-title">GTL</div></div>
             <div class="card-fullname">Green Textile Limited</div>
           </div>
           <div class="card-summary-box">
@@ -464,23 +444,36 @@
             </div>
 
             <div class="form-group">
-              <label>DRI (Responsible Person) *</label>
+              <label>Responsible Person *</label>
               <input type="text" name="responsible" id="subResp" required placeholder="e.g. Hafizur Rahman Ripon" />
             </div>
 
             <div class="form-group">
-              <label>DL (Deadline / Timeline)</label>
+              <label>Deadline</label>
               <input type="date" name="dl" id="subDl" />
             </div>
 
             <div class="form-group">
-              <label>Actual Completion Date (If already completed)</label>
+              <label>Actual Completion Date</label>
               <input type="date" name="actualCompletionDate" id="subActualDate" />
             </div>
 
             <div class="form-group">
-              <label>Budget (Amount only)</label>
-              <input type="number" name="budget" id="subBudget" placeholder="e.g. 1080" />
+              <label>Internal / External</label>
+              <select name="internalExternal" id="subIntExt">
+                <option value="Internal">Internal</option>
+                <option value="External">External</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>PO Value</label>
+              <input type="number" name="poValue" id="subPoVal" placeholder="e.g. 15000" />
+            </div>
+
+            <div class="form-group">
+              <label>PO Number</label>
+              <input type="text" name="poNumber" id="subPoNum" placeholder="e.g. PO-8823" />
             </div>
 
             <div class="form-group">
@@ -518,7 +511,7 @@
         </form>
       </div>
 
-      <!-- Live Sheet Log Table -->
+      <!-- Live Sheet Log Table (Exact 16 Columns) -->
       <div class="excel-header">
         <span id="tableHeaderTitle">INTERNAL SAFETY FOLLOW-UP INSPECTION REPORT</span>
         <button class="btn-nav" style="color:#000;" onclick="loadRecords()">🔄 Reload Sheet Data</button>
@@ -527,19 +520,22 @@
         <table>
           <thead>
             <tr>
-              <th style="width: 35px;">Sl</th>
-              <th>Findings / Issue</th>
+              <th style="width: 35px;">Sl No</th>
+              <th>Findings/Issue</th>
               <th>Location</th>
-              <th style="width: 90px; text-align:center;">Pictorial Evidence</th>
-              <th>DRI</th>
-              <th style="text-align:center;">DL (Deadline)</th>
-              <th style="text-align:center;">Actual Completion Date</th>
-              <th>Budget</th>
+              <th style="width: 85px; text-align:center;">Pictorial Evidence</th>
+              <th>Responsible Person</th>
+              <th>Deadline</th>
+              <th>Actual Completion date</th>
+              <th>Internal/External</th>
+              <th>PO Value</th>
+              <th>PO Number</th>
               <th>Status</th>
-              <th style="width: 90px; text-align:center;">Corrected Pictures</th>
-              <th>Remarks</th>
-              <th>Updated Date</th>
-              <th>Submitted By</th>
+              <th style="width: 85px; text-align:center;">Corrected Pic</th>
+              <th>Remark</th>
+              <th>Input date</th>
+              <th>Submitted by</th>
+              <th>Action</th>
             </tr>
           </thead>
           <tbody id="tableBody"></tbody>
@@ -550,60 +546,58 @@
 
   </div>
 
-  <!-- POPUP MODAL 1: Update DL (Deadline) -->
-  <div id="dlModal" class="modal-overlay hidden">
+  <!-- POPUP MODAL: Inline Row Data Editor (Dates, Int/Ext, PO Value, PO Number) -->
+  <div id="editRowModal" class="modal-overlay hidden">
     <div class="modal">
-      <h3 style="color:var(--primary); margin-bottom:8px;">Update Deadline (DL)</h3>
-      <p style="font-size:0.82rem; color:#555; margin-bottom:12px;">CAP ID: <b id="dlModalCapIdDisplay"></b></p>
+      <h3 style="color:var(--primary); margin-bottom:8px;">Edit Log Record</h3>
+      <p style="font-size:0.82rem; color:#555; margin-bottom:14px;">CAP ID: <b id="editModalCapIdDisplay"></b></p>
       
-      <form id="dlModalForm" method="POST" target="hidden_iframe" onsubmit="handleDlModalSubmit(this)">
-        <input type="hidden" name="action" value="updateDL" />
-        <input type="hidden" name="plant" id="dlModalPlant" />
-        <input type="hidden" name="department" id="dlModalDept" />
-        <input type="hidden" name="capId" id="dlModalCapId" />
+      <form id="editRowForm" method="POST" target="hidden_iframe" onsubmit="handleEditRowSubmit(this)">
+        <input type="hidden" name="action" value="updateRowData" />
+        <input type="hidden" name="plant" id="editModalPlant" />
+        <input type="hidden" name="department" id="editModalDept" />
+        <input type="hidden" name="capId" id="editModalCapId" />
+
+        <div class="form-group" style="margin-bottom:10px;">
+          <label>Deadline (DL)</label>
+          <input type="date" name="dl" id="editModalDl" />
+        </div>
+
+        <div class="form-group" style="margin-bottom:10px;">
+          <label>Actual Completion Date</label>
+          <input type="date" name="actualCompletionDate" id="editModalActualDate" />
+        </div>
+
+        <div class="form-group" style="margin-bottom:10px;">
+          <label>Internal / External</label>
+          <select name="internalExternal" id="editModalIntExt">
+            <option value="Internal">Internal</option>
+            <option value="External">External</option>
+          </select>
+        </div>
+
+        <div class="form-group" style="margin-bottom:10px;">
+          <label>PO Value</label>
+          <input type="number" name="poValue" id="editModalPoVal" />
+        </div>
 
         <div class="form-group" style="margin-bottom:14px;">
-          <label>Target Deadline (DL) *</label>
-          <input type="date" name="dl" id="dlModalInput" required />
+          <label>PO Number</label>
+          <input type="text" name="poNumber" id="editModalPoNum" />
         </div>
 
         <div style="display:flex; gap:8px;">
-          <button type="button" class="btn-nav" style="flex:1;" onclick="closeDlModal()">Cancel</button>
-          <button type="submit" class="btn-submit" id="btnSaveDlModal" style="flex:1; margin-top:0;">Save DL & Recalculate</button>
+          <button type="button" class="btn-nav" style="flex:1;" onclick="closeEditRowModal()">Cancel</button>
+          <button type="submit" class="btn-submit" id="btnSaveEditModal" style="flex:1; margin-top:0;">Save & Sync Sheet</button>
         </div>
       </form>
     </div>
   </div>
 
-  <!-- POPUP MODAL 2: Update Actual Completion Date -->
-  <div id="dateModal" class="modal-overlay hidden">
-    <div class="modal">
-      <h3 style="color:var(--primary); margin-bottom:8px;">Update Completion Date</h3>
-      <p style="font-size:0.82rem; color:#555; margin-bottom:12px;">CAP ID: <b id="dateModalCapIdDisplay"></b></p>
-      
-      <form id="dateModalForm" method="POST" target="hidden_iframe" onsubmit="handleDateModalSubmit(this)">
-        <input type="hidden" name="action" value="updateActualDate" />
-        <input type="hidden" name="plant" id="dateModalPlant" />
-        <input type="hidden" name="department" id="dateModalDept" />
-        <input type="hidden" name="capId" id="dateModalCapId" />
-
-        <div class="form-group" style="margin-bottom:14px;">
-          <label>Actual Completion Date *</label>
-          <input type="date" name="actualCompletionDate" id="dateModalInput" required />
-        </div>
-
-        <div style="display:flex; gap:8px;">
-          <button type="button" class="btn-nav" style="flex:1;" onclick="closeDateModal()">Cancel</button>
-          <button type="submit" class="btn-submit" id="btnSaveDateModal" style="flex:1; margin-top:0;">Save & Recalculate</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- POPUP MODAL 3: Update Corrected Picture -->
+  <!-- POPUP MODAL: Update Corrected Picture -->
   <div id="updateModal" class="modal-overlay hidden">
     <div class="modal">
-      <h3 style="color:var(--primary); margin-bottom:8px;">Update Corrected Picture</h3>
+      <h3 style="color:var(--primary); margin-bottom:8px;">Upload Corrected Picture</h3>
       <p style="font-size:0.82rem; color:#555; margin-bottom:12px;">CAP ID: <b id="modalCapIdDisplay"></b></p>
       
       <form id="modalForm" method="POST" target="hidden_iframe" onsubmit="handleModalSubmit(this)">
@@ -650,7 +644,7 @@
       evidenceBase64: "",
       correctedBase64: "",
       modalBase64: "",
-      activeUpdateCapId: null
+      records: []
     };
 
     var submitted = false;
@@ -735,8 +729,7 @@
 
         document.getElementById("capForm").action = API_URL;
         document.getElementById("modalForm").action = API_URL;
-        document.getElementById("dateModalForm").action = API_URL;
-        document.getElementById("dlModalForm").action = API_URL;
+        document.getElementById("editRowForm").action = API_URL;
 
         document.getElementById("hiddenPlant").value = state.plant;
         document.getElementById("hiddenDept").value = state.department;
@@ -745,7 +738,6 @@
       }
     }
 
-    // Format date strictly to "10 October 2026"
     function formatDateForDisplay(dStr) {
       if (!dStr) return "-";
       var d = new Date(dStr);
@@ -776,7 +768,7 @@
 
       var reader = new FileReader();
       reader.onload = function(e) {
-        compressSquareImage(e.target.result, function(compressed) {
+        compressSquareFast(e.target.result, function(compressed) {
           var img = document.getElementById(previewId);
           img.src = compressed;
           img.style.display = "block";
@@ -793,10 +785,11 @@
       reader.readAsDataURL(file);
     }
 
-    function compressSquareImage(base64Str, callback) {
+    // Fast Square Compression (~35KB payload, instant loading)
+    function compressSquareFast(base64Str, callback) {
       var img = new Image();
       img.onload = function() {
-        var size = 600;
+        var size = 480; 
         var canvas = document.createElement('canvas');
         canvas.width = size;
         canvas.height = size;
@@ -807,7 +800,7 @@
         var sy = (img.height - minSide) / 2;
 
         ctx.drawImage(img, sx, sy, minSide, minSide, 0, 0, size, size);
-        callback(canvas.toDataURL('image/jpeg', 0.65));
+        callback(canvas.toDataURL('image/jpeg', 0.60));
       };
       img.src = base64Str;
     }
@@ -843,14 +836,17 @@
         "<td>" + document.getElementById("subLoc").value + "</td>" +
         "<td style='text-align:center;'>" + evImgHtml + "</td>" +
         "<td>" + document.getElementById("subResp").value + "</td>" +
-        "<td style='text-align:center;'>" + (dlVal ? formatDateForDisplay(dlVal) : "-") + "</td>" +
-        "<td style='text-align:center;'>" + (actVal ? formatDateForDisplay(actVal) : "<span style='color:#999;'>Pending</span>") + "</td>" +
-        "<td>" + (document.getElementById("subBudget").value || "-") + "</td>" +
+        "<td>" + (dlVal ? formatDateForDisplay(dlVal) : "-") + "</td>" +
+        "<td>" + (actVal ? formatDateForDisplay(actVal) : "-") + "</td>" +
+        "<td>" + document.getElementById("subIntExt").value + "</td>" +
+        "<td>" + (document.getElementById("subPoVal").value || "-") + "</td>" +
+        "<td>" + (document.getElementById("subPoNum").value || "-") + "</td>" +
         "<td>" + computeStatusBadge(calculated) + "</td>" +
         "<td style='text-align:center;'>" + crImgHtml + "</td>" +
         "<td>" + (document.getElementById("subRemarks").value || "-") + "</td>" +
         "<td>" + formatDateForDisplay(new Date()) + "</td>" +
-        "<td>" + document.getElementById("subBy").value + "<br><small style='color:green;'>Syncing...</small></td>";
+        "<td>" + document.getElementById("subBy").value + "<br><small style='color:green;'>Syncing...</small></td>" +
+        "<td>-</td>";
       
       tbody.prepend(tempTr);
     }
@@ -879,15 +875,16 @@
       var tbody = document.getElementById("tableBody");
       tbody.innerHTML = "";
       if (data && data.records && data.records.length > 0) {
+        state.records = data.records;
         data.records.forEach(renderRow);
       } else {
-        tbody.innerHTML = "<tr><td colspan='13' style='text-align:center; color:#888;'>No records found in this sheet yet. Fill the form above to add the first CAP.</td></tr>";
+        tbody.innerHTML = "<tr><td colspan='16' style='text-align:center; color:#888;'>No records found in this sheet yet. Fill the form above to add the first CAP.</td></tr>";
       }
     };
 
     function loadRecords() {
       var tbody = document.getElementById("tableBody");
-      tbody.innerHTML = "<tr><td colspan='13' style='text-align:center;'>Loading CAP records from Google Sheets...</td></tr>";
+      tbody.innerHTML = "<tr><td colspan='16' style='text-align:center;'>Loading CAP records from Google Sheets...</td></tr>";
 
       var script = document.createElement('script');
       script.src = API_URL + "?plant=" + encodeURIComponent(state.plant) + "&department=" + encodeURIComponent(state.department) + "&callback=handleSheetData&t=" + new Date().getTime();
@@ -900,23 +897,12 @@
       var tr = document.createElement("tr");
 
       var evImg = row.evidenceUrl 
-        ? "<img src='" + row.evidenceUrl + "' class='square-img' loading='lazy' onerror=\"this.src='https://placehold.co/80x80?text=Evidence';\" />" 
+        ? "<img src='" + row.evidenceUrl + "' class='square-img' loading='lazy' onerror=\"this.src='https://placehold.co/75x75?text=Evidence';\" />" 
         : "<span style='color:#999;'>No image</span>";
       
       var crImg = row.correctedUrl 
-        ? "<img src='" + row.correctedUrl + "' class='square-img' loading='lazy' onerror=\"this.src='https://placehold.co/80x80?text=Corrected';\" /><button class='btn-update' onclick='openUpdateModal(\"" + row.capId + "\")'>Update</button>"
+        ? "<img src='" + row.correctedUrl + "' class='square-img' loading='lazy' onerror=\"this.src='https://placehold.co/75x75?text=Corrected';\" /><button class='btn-update' onclick='openUpdateModal(\"" + row.capId + "\")'>Update</button>"
         : "<div style='text-align:center;'><span style='color:#999; display:block; margin-bottom:4px;'>Pending</span><button class='btn-update' onclick='openUpdateModal(\"" + row.capId + "\")'>📷 Upload</button></div>";
-
-      // 1. DL button (tap-to-update)
-      var dlDisplay = row.dl ? formatDateForDisplay(row.dl) : "📅 Set DL";
-      var dlCell = "<button class='cell-date-btn' onclick='openDlModal(\"" + row.capId + "\", \"" + (row.dl || "") + "\")'>" + dlDisplay + "</button>";
-
-      // 2. Actual completion date button (tap-to-update)
-      var actDateDisplay = row.actualCompletionDate ? formatDateForDisplay(row.actualCompletionDate) : "📅 Set Date";
-      var actDateCell = "<button class='cell-date-btn' onclick='openDateModal(\"" + row.capId + "\", \"" + (row.actualCompletionDate || "") + "\")'>" + actDateDisplay + "</button>";
-
-      // 3. Submitted date strictly formatted e.g. "10 October 2026"
-      var formattedSubmittedDate = formatDateForDisplay(row.submittedDate);
 
       tr.innerHTML = 
         "<td><b>" + (row.sl || "") + "</b></td>" +
@@ -924,77 +910,60 @@
         "<td>" + (row.location || "") + "</td>" +
         "<td style='text-align:center;'>" + evImg + "</td>" +
         "<td>" + (row.responsible || "") + "</td>" +
-        "<td style='text-align:center;'>" + dlCell + "</td>" +
-        "<td style='text-align:center;'>" + actDateCell + "</td>" +
-        "<td>" + (row.budget || "-") + "</td>" +
+        "<td>" + (row.dl ? formatDateForDisplay(row.dl) : "-") + "</td>" +
+        "<td>" + (row.actualCompletionDate ? formatDateForDisplay(row.actualCompletionDate) : "-") + "</td>" +
+        "<td><span style='font-weight:600;'>" + (row.internalExternal || "Internal") + "</span></td>" +
+        "<td>" + (row.poValue || "-") + "</td>" +
+        "<td>" + (row.poNumber || "-") + "</td>" +
         "<td>" + computeStatusBadge(row.status) + "</td>" +
         "<td style='text-align:center;'>" + crImg + "</td>" +
         "<td>" + (row.remarks || "-") + "</td>" +
-        "<td>" + formattedSubmittedDate + "</td>" +
-        "<td>" + (row.submittedBy || "") + "</td>";
+        "<td>" + formatDateForDisplay(row.submittedDate) + "</td>" +
+        "<td>" + (row.submittedBy || "") + "</td>" +
+        "<td><button class='btn-edit-row' onclick='openEditRowModal(\"" + row.capId + "\")'>✏️ Edit</button></td>";
 
       tbody.appendChild(tr);
     }
 
-    // Modal 1: DL (Deadline) Update
-    function openDlModal(capId, currentDl) {
-      document.getElementById("dlModalCapIdDisplay").innerText = capId;
-      document.getElementById("dlModalCapId").value = capId;
-      document.getElementById("dlModalPlant").value = state.plant;
-      document.getElementById("dlModalDept").value = state.department;
-      
-      var defaultDate = "";
-      if (currentDl) {
-        var d = new Date(currentDl);
-        if (!isNaN(d.getTime())) defaultDate = d.toISOString().split('T')[0];
-      }
-      document.getElementById("dlModalInput").value = defaultDate;
-      document.getElementById("dlModal").classList.remove("hidden");
+    // Modal: Inline Row Editor
+    function openEditRowModal(capId) {
+      var item = state.records.find(r => r.capId === capId);
+      if (!item) return;
+
+      document.getElementById("editModalCapIdDisplay").innerText = capId;
+      document.getElementById("editModalCapId").value = capId;
+      document.getElementById("editModalPlant").value = state.plant;
+      document.getElementById("editModalDept").value = state.department;
+
+      var toInputDate = function(str) {
+        if (!str || str === "-") return "";
+        var d = new Date(str);
+        return isNaN(d.getTime()) ? "" : d.toISOString().split('T')[0];
+      };
+
+      document.getElementById("editModalDl").value = toInputDate(item.dl);
+      document.getElementById("editModalActualDate").value = toInputDate(item.actualCompletionDate);
+      document.getElementById("editModalIntExt").value = item.internalExternal || "Internal";
+      document.getElementById("editModalPoVal").value = item.poValue || "";
+      document.getElementById("editModalPoNum").value = item.poNumber || "";
+
+      document.getElementById("editRowModal").classList.remove("hidden");
     }
 
-    function closeDlModal() {
-      document.getElementById("dlModal").classList.add("hidden");
+    function closeEditRowModal() {
+      document.getElementById("editRowModal").classList.add("hidden");
     }
 
-    function handleDlModalSubmit(form) {
-      var btn = document.getElementById("btnSaveDlModal");
-      btn.innerText = "Updating...";
+    function handleEditRowSubmit(form) {
+      var btn = document.getElementById("btnSaveEditModal");
+      btn.innerText = "Saving...";
       btn.disabled = true;
       submitted = true;
-      closeDlModal();
+      closeEditRowModal();
     }
 
-    // Modal 2: Actual Completion Date Update
-    function openDateModal(capId, currentDate) {
-      document.getElementById("dateModalCapIdDisplay").innerText = capId;
-      document.getElementById("dateModalCapId").value = capId;
-      document.getElementById("dateModalPlant").value = state.plant;
-      document.getElementById("dateModalDept").value = state.department;
-      
-      var defaultDate = "";
-      if (currentDate) {
-        var d = new Date(currentDate);
-        if (!isNaN(d.getTime())) defaultDate = d.toISOString().split('T')[0];
-      }
-      document.getElementById("dateModalInput").value = defaultDate || new Date().toISOString().split('T')[0];
-      document.getElementById("dateModal").classList.remove("hidden");
-    }
-
-    function closeDateModal() {
-      document.getElementById("dateModal").classList.add("hidden");
-    }
-
-    function handleDateModalSubmit(form) {
-      var btn = document.getElementById("btnSaveDateModal");
-      btn.innerText = "Updating...";
-      btn.disabled = true;
-      submitted = true;
-      closeDateModal();
-    }
-
-    // Modal 3: Corrected Picture Update
+    // Modal: Corrected Picture Update
     function openUpdateModal(capId) {
-      state.activeUpdateCapId = capId;
       document.getElementById("modalCapIdDisplay").innerText = capId;
       document.getElementById("modalCapId").value = capId;
       document.getElementById("modalPlant").value = state.plant;
@@ -1017,7 +986,7 @@
 
       var reader = new FileReader();
       reader.onload = function(e) {
-        compressSquareImage(e.target.result, function(compressed) {
+        compressSquareFast(e.target.result, function(compressed) {
           var img = document.getElementById("modalImgPrev");
           img.src = compressed;
           img.style.display = "block";
